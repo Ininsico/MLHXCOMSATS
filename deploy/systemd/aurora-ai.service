@@ -1,0 +1,24 @@
+[Unit]
+Description=Aurora local AI sidecar (MedGemma + RAG)
+Documentation=https://github.com/Ininsico/MLHXCOMSATS/tree/main/ai-service
+After=network.target
+
+[Service]
+Type=simple
+User=aurora
+Group=aurora
+WorkingDirectory=/opt/aurora/ai-service
+EnvironmentFile=/etc/aurora/aurora.env
+ExecStart=/opt/aurora/ai-service/.venv/bin/python -m app.main
+Restart=always
+RestartSec=10
+
+# The model loads into GPU/CPU memory; give it time before systemd gives up
+TimeoutStartSec=180
+StandardOutput=append:/var/log/aurora-ai.log
+StandardError=append:/var/log/aurora-ai.log
+
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

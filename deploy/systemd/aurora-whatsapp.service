@@ -1,0 +1,26 @@
+[Unit]
+Description=Aurora WhatsApp bridge (whatsapp-web.js)
+Documentation=https://github.com/Ininsico/MLHXCOMSATS/tree/main/backend/whatsapp
+After=network.target aurora-api.service
+Requires=aurora-api.service
+
+[Service]
+Type=simple
+User=aurora
+Group=aurora
+WorkingDirectory=/opt/aurora/backend
+EnvironmentFile=/etc/aurora/aurora.env
+
+# First run prints a QR code in the journal — scan it once, the session persists:
+#   sudo journalctl -u aurora-whatsapp -f
+ExecStart=/usr/bin/node whatsapp/nurse-bridge.js
+Restart=on-failure
+RestartSec=15
+
+StandardOutput=append:/var/log/aurora-whatsapp.log
+StandardError=append:/var/log/aurora-whatsapp.log
+
+NoNewPrivileges=true
+
+[Install]
+WantedBy=multi-user.target

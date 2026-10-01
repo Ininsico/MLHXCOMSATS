@@ -1,0 +1,23 @@
+[Unit]
+Description=Aurora API (Node + Express)
+Documentation=https://github.com/Ininsico/MLHXCOMSATS
+After=network.target mongod.service
+
+[Service]
+Type=simple
+User=aurora
+Group=aurora
+WorkingDirectory=/opt/aurora/backend
+EnvironmentFile=/etc/aurora/aurora.env
+ExecStart=/usr/bin/node src/index.js
+Restart=always
+RestartSec=5
+StandardOutput=append:/var/log/aurora-api.log
+StandardError=append:/var/log/aurora-api.log
+
+# keep it contained
+NoNewPrivileges=true
+PrivateTmp=true
+
+[Install]
+WantedBy=multi-user.target

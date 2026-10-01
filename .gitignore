@@ -50,3 +50,9 @@ coverage/
 .idea/
 .DS_Store
 Thumbs.db
+
+# Deployment secrets — never commit these
+deploy/.env
+deploy/secrets/
+deploy/*.pem
+deploy/*.key
