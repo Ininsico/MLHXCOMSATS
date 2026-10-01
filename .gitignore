@@ -1,0 +1,52 @@
+# dependencies
+node_modules/
+
+# builds
+dist/
+build/
+
+# secrets and local config
+.env
+.env.*
+!.env.example
+
+# whatsapp bridge session — full access to the linked account, never commit
+.wwebjs_auth/
+.wwebjs_cache/
+backend/whatsapp/session/
+
+# python
+.venv/
+__pycache__/
+*.py[cod]
+
+# local model weights (multi-GB, re-downloadable)
+ai-service/models/*.gguf
+ai-service/models/*.bin
+ai-service/data/chroma/
+ai-service/data/*.json
+
+# logs and scratch
+*.log
+logs/
+
+# agent workspace state (skills live in .commandcode/skills and are committed)
+.commandcode/taste/
+.commandcode/plans/
+.commandcode/sessions/
+
+# local AI service state
+ai-service/data/last_good.json
+ai-service/.pytest_cache/
+ai-service/**/*.egg-info/
+
+# test / build caches
+coverage/
+.eslintcache
+*.tsbuildinfo
+
+# editor / OS
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

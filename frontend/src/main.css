@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&display=swap');
+@import 'tailwindcss';
+
+/* ============================================================
+   Aurora — full color scheme / theme schema
+   Single source of truth for every raw value. Components use
+   these through Tailwind utilities (bg-brand-700, text-ink, …).
+   ============================================================ */
+
+@theme {
+  --font-sans: 'Poppins', system-ui, -apple-system, 'Segoe UI', sans-serif;
+
+  /* Brand ramp — Aurora green */
+  --color-brand-50: #f0fdf4;
+  --color-brand-100: #dcfce7;
+  --color-brand-200: #bbf7d0;
+  --color-brand-300: #86efac;
+  --color-brand-400: #4ade80;
+  --color-brand-500: #22c55e;
+  --color-brand-600: #16a34a;
+  --color-brand-700: #15803d;
+  --color-brand-800: #166534;
+  --color-brand-900: #14532d;
+  --color-brand-950: #052e16;
+
+  /* Surfaces and text */
+  --color-ink: #052e16;
+  --color-body: #4b5e55;
+  --color-mist: #62756b;
+  --color-line: #e3ece7;
+  --color-surface: #f6fbf8;
+
+  /* Feedback */
+  --color-danger: #dc2626;
+  --color-danger-bg: #fef2f2;
+
+  /* Elevation */
+  --shadow-soft: 0 24px 48px -24px rgb(5 46 31 / 0.16);
+  --shadow-lift: 0 32px 64px -24px rgb(5 46 31 / 0.24);
+}
+
+@layer base {
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    background-color: #fff;
+    color: var(--color-body);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  ::selection {
+    background-color: var(--color-brand-200);
+    color: var(--color-brand-950);
+  }
+}
+
+/* ---------- Button shine ---------- */
+
+@layer components {
+  .btn-shine {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .btn-shine::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    bottom: 0;
+    left: -45%;
+    width: 45%;
+    background: linear-gradient(105deg, transparent, rgb(255 255 255 / 0.4), transparent);
+    transform: skewX(-20deg);
+    transition: transform 600ms ease;
+    pointer-events: none;
+  }
+
+  .btn-shine:hover::after,
+  .btn-shine:focus-visible::after {
+    transform: skewX(-20deg) translateX(340%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}

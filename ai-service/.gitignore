@@ -1,0 +1,10 @@
+.venv/
+models/
+llama-cpp/
+data/
+download.log
+.env
+__pycache__/
+*.pyc
+samples/*.png
+/scripts
