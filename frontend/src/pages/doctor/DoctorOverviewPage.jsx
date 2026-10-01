@@ -1,6 +1,14 @@
 import { useState } from 'react'
 import { Link, useOutletContext } from 'react-router-dom'
-import { ArrowRight, CalendarCheck, MapPin, Stethoscope } from 'lucide-react'
+import {
+  ArrowRight,
+  CalendarCheck,
+  CalendarDays,
+  CheckCircle2,
+  MapPin,
+  Stethoscope,
+  UserCheck,
+} from 'lucide-react'
 import SelectField from '../../components/SelectField'
 import StatusChip from '../../components/StatusChip'
 import { api } from '../../lib/api'
@@ -9,10 +17,13 @@ import { SPECIALTIES } from '../../lib/specialties'
 import { formatSlotDate, todayISO } from '../../lib/themes'
 
 const FIELD_CLASS =
-  'mt-2 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30'
+  'mt-2 w-full rounded-lg border border-line bg-white px-3 py-2.5 text-sm text-ink outline-none transition-[border-color,box-shadow] duration-200 placeholder:text-mist hover:border-brand-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30'
 
 const SUBMIT_CLASS =
   'inline-flex h-11 items-center justify-center rounded-lg bg-brand-700 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:opacity-60'
+
+const META_CHIP_CLASS =
+  'inline-flex items-center gap-1.5 rounded-full border border-line bg-surface px-3 py-1 text-xs font-medium text-body'
 
 export default function DoctorOverviewPage() {
   const { staff, appointments, state, refresh } = useOutletContext()
@@ -39,6 +50,12 @@ export default function DoctorOverviewPage() {
   const confirmed = appointments.filter((item) => item.status === 'confirmed').length
   const completed = appointments.filter((item) => item.status === 'completed').length
 
+  const stats = [
+    { label: 'Today', value: todayAppointments.length, icon: CalendarDays },
+    { label: 'Confirmed', value: confirmed, icon: CheckCircle2 },
+    { label: 'Completed', value: completed, icon: UserCheck },
+  ]
+
   const details = form ?? {
     phone: staff.phone ?? '',
     department: staff.department ?? '',
@@ -64,43 +81,51 @@ export default function DoctorOverviewPage() {
   return (
     <>
       <header className="flex flex-wrap items-start justify-between gap-4">
-        <div>
+        <div className="min-w-0">
           <p className="text-xs font-bold uppercase tracking-widest text-brand-700">
             Doctor dashboard
           </p>
-          <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">{staff.name}</h1>
-          <p className="mt-2 flex flex-wrap items-center gap-3 text-sm text-mist">
-            <span className="flex items-center gap-2">
-              <Stethoscope size={15} />
+          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-ink">
+            {staff.name}
+          </h1>
+          <div className="mt-3 flex flex-wrap items-center gap-2">
+            <span className={META_CHIP_CLASS}>
+              <Stethoscope size={14} className="text-brand-600" />
               {staff.specialty || 'No specialty set'}
               {staff.department ? ` · ${staff.department}` : ''}
             </span>
             {hospital.name ? (
-              <span className="flex items-center gap-2">
-                <MapPin size={15} />
+              <span className={META_CHIP_CLASS}>
+                <MapPin size={14} className="text-brand-600" />
                 {hospital.name}
                 {hospital.city ? ` · ${hospital.city}` : ''}
               </span>
             ) : null}
-          </p>
+          </div>
         </div>
 
         <StatusChip status={staff.status} />
       </header>
 
       <div className="mt-8 grid gap-4 sm:grid-cols-3">
-        <div className="rounded-2xl border border-line bg-white p-5 shadow-soft">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mist">Today</p>
-          <p className="mt-2 text-3xl font-extrabold text-ink">{todayAppointments.length}</p>
-        </div>
-        <div className="rounded-2xl border border-line bg-white p-5 shadow-soft">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mist">Confirmed</p>
-          <p className="mt-2 text-3xl font-extrabold text-ink">{confirmed}</p>
-        </div>
-        <div className="rounded-2xl border border-line bg-white p-5 shadow-soft">
-          <p className="text-xs font-semibold uppercase tracking-wide text-mist">Completed</p>
-          <p className="mt-2 text-3xl font-extrabold text-ink">{completed}</p>
-        </div>
+        {stats.map((stat) => (
+          <div
+            key={stat.label}
+            className="rounded-2xl border border-line bg-white p-5 shadow-soft transition-shadow duration-200 hover:shadow-lift"
+          >
+            <div className="flex items-start justify-between gap-3">
+              <p className="text-xs font-semibold uppercase tracking-wide text-mist">
+                {stat.label}
+              </p>
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-xl bg-brand-50 text-brand-700">
+                <stat.icon size={18} />
+              </span>
+            </div>
+            <p className="mt-3 text-3xl font-extrabold tracking-tight text-ink tabular-nums">
+              {stat.value}
+            </p>
+          </div>
+        ))}
       </div>
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
@@ -120,25 +145,29 @@ export default function DoctorOverviewPage() {
           </div>
 
           {todayAppointments.length ? (
-            <ul className="mt-5 space-y-3">
+            <ul className="mt-5 space-y-2">
               {todayAppointments.map((item) => (
                 <li
                   key={item.id ?? item._id}
-                  className="flex items-center gap-4 rounded-xl bg-surface px-4 py-3"
+                  className="flex items-center gap-3 rounded-xl border border-transparent bg-surface px-4 py-3.5 transition-colors duration-200 hover:border-brand-200 hover:bg-brand-50"
                 >
-                  <span className="text-sm font-bold text-ink">{item.time}</span>
+                  <span className="w-14 shrink-0 text-sm font-bold tabular-nums text-ink">
+                    {item.time}
+                  </span>
                   <span className="min-w-0 flex-1">
                     <span className="block truncate text-sm font-semibold text-ink">
                       {item.patientName}
                     </span>
                     {item.reason ? (
-                      <span className="block truncate text-xs text-mist">{item.reason}</span>
+                      <span className="mt-0.5 block truncate text-xs text-mist">{item.reason}</span>
                     ) : null}
                   </span>
-                  <StatusChip
-                    status={item.status}
-                    label={APPOINTMENT_STATUS_LABELS[item.status] ?? item.status}
-                  />
+                  <span className="shrink-0">
+                    <StatusChip
+                      status={item.status}
+                      label={APPOINTMENT_STATUS_LABELS[item.status] ?? item.status}
+                    />
+                  </span>
                 </li>
               ))}
             </ul>
@@ -153,13 +182,16 @@ export default function DoctorOverviewPage() {
               <p className="text-xs font-semibold uppercase tracking-wide text-mist">
                 Next up
               </p>
-              <ul className="mt-3 space-y-2">
+              <ul className="mt-3 space-y-1">
                 {upcoming.slice(0, 4).map((item) => (
-                  <li key={item.id ?? item._id} className="flex items-center gap-3 text-sm">
+                  <li
+                    key={item.id ?? item._id}
+                    className="flex items-center gap-3 rounded-lg px-2 py-1.5 text-sm transition-colors duration-200 hover:bg-surface"
+                  >
                     <span className="w-32 shrink-0 text-xs font-semibold text-ink">
                       {formatSlotDate(item.date)}
                     </span>
-                    <span className="text-xs text-mist">{item.time}</span>
+                    <span className="text-xs tabular-nums text-mist">{item.time}</span>
                     <span className="min-w-0 flex-1 truncate text-body">{item.patientName}</span>
                   </li>
                 ))}

@@ -40,31 +40,35 @@ export default function AuthSplitLayout({
   const [featured, ...others] = REVIEWS
 
   const form = (
-    <div className="flex w-full items-center justify-center px-6 py-16 lg:w-1/2">
-      <div className="w-full max-w-md">
-        <Link
-          to="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-mist transition-colors hover:text-ink"
-        >
-          <ArrowLeft size={15} />
-          Back to home
-        </Link>
+    <div className="flex w-full flex-col px-6 py-6 lg:w-1/2">
+      <Link
+        to="/"
+        className="inline-flex w-fit items-center gap-2 rounded-lg px-2.5 py-2 text-sm font-semibold text-mist transition-colors duration-200 hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
+      >
+        <ArrowLeft size={15} />
+        Back to home
+      </Link>
 
-        {eyebrow ? (
-          <p className="text-xs font-bold uppercase tracking-widest text-brand-700">{eyebrow}</p>
-        ) : null}
-        <h1 className="mt-2 text-3xl font-extrabold tracking-tight text-ink">{title}</h1>
-        <p className="mt-2 text-sm text-mist">{subtitle}</p>
+      <div className="flex flex-1 items-center justify-center py-8">
+        <div className="w-full max-w-md">
+          {eyebrow ? (
+            <p className="text-xs font-bold uppercase tracking-widest text-brand-700">{eyebrow}</p>
+          ) : null}
+          <h1 className="mt-2 text-3xl font-extrabold leading-tight tracking-tight text-ink">
+            {title}
+          </h1>
+          <p className="mt-1.5 text-sm text-mist">{subtitle}</p>
 
-        <div className="mt-8">{children}</div>
+          <div className="mt-6">{children}</div>
 
-        {footer ? <div className="mt-6 text-sm text-mist">{footer}</div> : null}
+          {footer ? <div className="mt-5 text-sm text-mist">{footer}</div> : null}
+        </div>
       </div>
     </div>
   )
 
   const reviews = (
-    <div className="relative hidden w-1/2 flex-col overflow-hidden bg-brand-950 p-12 lg:flex">
+    <div className="relative hidden w-1/2 flex-col overflow-hidden bg-brand-950 p-12 xl:p-14 lg:flex">
       <div
         className="absolute -right-24 -top-24 h-80 w-80 rounded-full"
         style={{ background: 'radial-gradient(circle, rgb(74 222 128 / 0.22), transparent 65%)' }}
@@ -77,20 +81,25 @@ export default function AuthSplitLayout({
       <div className="relative my-auto">
         <Quote size={28} className="text-brand-400" fill="currentColor" strokeWidth={0} />
         <blockquote className="mt-5">
-          <p className="text-xl font-semibold leading-relaxed text-white/90">“{featured.text}”</p>
-          <footer className="mt-5 flex items-center gap-3">
+          <p className="text-2xl leading-snug font-semibold text-balance text-white">
+            “{featured.text}”
+          </p>
+          <footer className="mt-4 flex items-center gap-3">
             <Stars />
-            <span className="text-sm text-white/55">
+            <span className="text-sm text-white/60">
               {featured.name} · {featured.role}
             </span>
           </footer>
         </blockquote>
 
-        <div className="mt-10 space-y-5 border-t border-white/10 pt-8">
+        <div className="mt-8 space-y-3 border-t border-white/10 pt-8">
           {others.map((review) => (
-            <blockquote key={review.name}>
-              <p className="text-sm leading-relaxed text-white/60">“{review.text}”</p>
-              <footer className="mt-1.5 text-xs text-white/35">
+            <blockquote
+              key={review.name}
+              className="rounded-xl border border-white/10 bg-white/5 px-4 py-3.5"
+            >
+              <p className="text-sm leading-relaxed text-white/75">“{review.text}”</p>
+              <footer className="mt-2 text-xs text-white/50">
                 {review.name} · {review.role}
               </footer>
             </blockquote>
@@ -98,7 +107,7 @@ export default function AuthSplitLayout({
         </div>
       </div>
 
-      <p className="relative mt-10 text-xs text-white/35">
+      <p className="relative mt-10 text-xs text-white/45">
         Patients, appointments, records, and billing — one calm platform.
       </p>
     </div>

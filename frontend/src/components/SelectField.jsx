@@ -27,8 +27,8 @@ export default function SelectField({
         <select
           id={id}
           {...selectProps}
-          className={`w-full appearance-none rounded-lg border bg-white pr-10 pl-3 text-sm text-ink outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30 disabled:bg-surface disabled:text-mist ${
-            error ? 'border-danger' : 'border-line'
+          className={`w-full appearance-none rounded-lg border bg-white pr-10 pl-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-mist focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30 disabled:bg-surface disabled:text-mist ${
+            error ? 'border-danger' : 'border-line hover:border-brand-200'
           } ${SIZES[size] ?? SIZES.md}`}
         >
           {options.map((option) => {

@@ -1,6 +1,8 @@
-import { useEffect, useState } from 'react'
+import { useEffect, useRef, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
-import { LogOut, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { AnimatePresence, motion, useReducedMotion } from 'framer-motion'
+import { ChevronDown, LogOut, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { EASE } from '../../lib/motion'
 
 function NavRow({ item, collapsed, indent = false, onClose }) {
   return (
@@ -29,7 +31,7 @@ function NavRow({ item, collapsed, indent = false, onClose }) {
       </span>
 
       <span
-        className={`flex-1 whitespace-nowrap transition-opacity duration-200 ${
+        className={`min-w-0 flex-1 truncate transition-opacity duration-200 ${
           collapsed ? 'lg:opacity-0' : 'opacity-100'
         }`}
       >
@@ -46,6 +48,80 @@ function NavRow({ item, collapsed, indent = false, onClose }) {
         </span>
       ) : null}
     </NavLink>
+  )
+}
+
+function UserMenu({ email, onSignout }) {
+  const reduceMotion = useReducedMotion()
+  const [open, setOpen] = useState(false)
+  const containerRef = useRef(null)
+
+  useEffect(() => {
+    if (!open) return undefined
+
+    const handlePointerDown = (event) => {
+      if (containerRef.current && !containerRef.current.contains(event.target)) {
+        setOpen(false)
+      }
+    }
+
+    const handleKey = (event) => {
+      if (event.key === 'Escape') setOpen(false)
+    }
+
+    window.addEventListener('mousedown', handlePointerDown)
+    window.addEventListener('keydown', handleKey)
+    return () => {
+      window.removeEventListener('mousedown', handlePointerDown)
+      window.removeEventListener('keydown', handleKey)
+    }
+  }, [open])
+
+  const itemClass =
+    'flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-left text-sm font-semibold text-body transition-colors duration-200 hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset'
+
+  return (
+    <div ref={containerRef} className="relative">
+      <button
+        type="button"
+        onClick={() => setOpen((current) => !current)}
+        aria-haspopup="menu"
+        aria-expanded={open}
+        className="inline-flex max-w-[9rem] items-center gap-1.5 rounded-lg py-2 pl-2.5 pr-2 text-sm font-medium text-body transition-colors duration-200 hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 sm:max-w-xs"
+      >
+        <span className="truncate">{email}</span>
+        <ChevronDown
+          size={16}
+          className={`shrink-0 transition-transform duration-200 ${open ? 'rotate-180' : ''}`}
+        />
+      </button>
+
+      <AnimatePresence>
+        {open ? (
+          <motion.div
+            role="menu"
+            initial={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={reduceMotion ? { opacity: 0 } : { opacity: 0, y: -6 }}
+            transition={{ duration: 0.18, ease: EASE }}
+            className="absolute right-0 top-full z-40 mt-2 w-60 max-w-[calc(100vw-2rem)] overflow-hidden rounded-xl border border-line bg-white p-1.5 shadow-lift"
+          >
+            <button
+              type="button"
+              role="menuitem"
+              onClick={() => {
+                setOpen(false)
+                onSignout()
+              }}
+              className={itemClass}
+            >
+              <LogOut size={18} className="shrink-0" />
+              Sign out
+            </button>
+          </motion.div>
+        ) : null}
+      </AnimatePresence>
+    </div>
   )
 }
 
@@ -87,7 +163,6 @@ export default function DashboardShell({
   const activeItem = entries.find((entry) =>
     entry.end ? location.pathname === entry.to : location.pathname.startsWith(entry.to),
   )
-
   const close = () => setDrawerOpen(false)
 
   return (
@@ -101,7 +176,7 @@ export default function DashboardShell({
       ) : null}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-40 flex w-64 flex-col overflow-hidden border-r border-line bg-white transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] print:hidden lg:translate-x-0 lg:transition-[width] lg:duration-300 lg:ease-[cubic-bezier(0.23,1,0.32,1)] ${
+        className={`fixed inset-y-0 left-0 z-40 flex w-64 max-w-[85vw] flex-col overflow-hidden border-r border-line bg-white transition-transform duration-300 ease-[cubic-bezier(0.23,1,0.32,1)] print:hidden lg:translate-x-0 lg:transition-[width] lg:duration-300 lg:ease-[cubic-bezier(0.23,1,0.32,1)] ${
           drawerOpen ? 'translate-x-0' : '-translate-x-full'
         } ${collapsed ? 'lg:w-20' : 'lg:w-64'}`}
       >
@@ -140,7 +215,7 @@ export default function DashboardShell({
                     }`}
                   >
                     <entry.icon size={14} />
-                    <span className="whitespace-nowrap">{entry.label}</span>
+                    <span className="min-w-0 truncate">{entry.label}</span>
                   </p>
 
                   <div className="space-y-1">
@@ -165,33 +240,6 @@ export default function DashboardShell({
               ),
             )}
           </nav>
-
-          <div className="shrink-0 border-t border-line p-3">
-            <p
-              className={`mb-1 truncate px-3 text-xs text-mist transition-opacity duration-200 ${
-                collapsed ? 'lg:opacity-0' : 'opacity-100'
-              }`}
-            >
-              {userEmail}
-            </p>
-            <button
-              type="button"
-              onClick={onSignout}
-              title={collapsed ? 'Sign out' : undefined}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-body transition-[background-color,color,padding] duration-300 hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset ${
-                collapsed ? 'lg:pl-[31px]' : ''
-              }`}
-            >
-              <LogOut size={18} className="shrink-0" />
-              <span
-                className={`whitespace-nowrap transition-opacity duration-200 ${
-                  collapsed ? 'lg:opacity-0' : 'opacity-100'
-                }`}
-              >
-                Sign out
-              </span>
-            </button>
-          </div>
         </div>
       </aside>
 
@@ -201,7 +249,7 @@ export default function DashboardShell({
         } lg:transition-[padding] lg:duration-300 lg:ease-[cubic-bezier(0.23,1,0.32,1)]`}
       >
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-line bg-white/80 px-4 backdrop-blur-xl print:hidden sm:px-6">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
@@ -221,12 +269,14 @@ export default function DashboardShell({
               {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
             </button>
 
-            <span className="text-sm font-semibold text-ink">{activeItem?.label ?? brandChip}</span>
+            <span className="truncate text-sm font-semibold text-ink">
+              {activeItem?.label ?? brandChip}
+            </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex min-w-0 items-center gap-3 sm:gap-4">
             {topbarExtra}
-            <span className="hidden text-sm text-mist sm:block">{userEmail}</span>
+            <UserMenu email={userEmail} onSignout={onSignout} />
           </div>
         </header>
 

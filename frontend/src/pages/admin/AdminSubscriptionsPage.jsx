@@ -101,22 +101,22 @@ export default function AdminSubscriptionsPage() {
       <section className="mt-10">
         <h2 className="text-lg font-semibold text-ink">Hospital subscriptions</h2>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-line shadow-soft">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[720px] text-left text-sm">
             <thead className="border-b border-line bg-surface">
               <tr>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
                   Hospital
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
+                <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist md:table-cell">
                   City
                 </th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
                   Plan
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
+                <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist md:table-cell">
                   Theme
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
+                <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist md:table-cell">
                   Renews
                 </th>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
@@ -128,7 +128,7 @@ export default function AdminSubscriptionsPage() {
               {data.rows.map((row) => (
                 <tr key={row.id} className="border-b border-line last:border-0">
                   <td className="px-4 py-3 font-medium text-ink">{row.name}</td>
-                  <td className="px-4 py-3 text-body">{row.city}</td>
+                  <td className="hidden px-4 py-3 text-body md:table-cell">{row.city}</td>
                   <td className="px-4 py-3 text-body">
                     {row.plan?.name ?? 'Starter'}
                     {row.plan?.price ? (
@@ -137,8 +137,10 @@ export default function AdminSubscriptionsPage() {
                       </span>
                     ) : null}
                   </td>
-                  <td className="px-4 py-3 text-body">{row.subscription?.themeId ?? 'classic'}</td>
-                  <td className="px-4 py-3 text-body">
+                  <td className="hidden px-4 py-3 text-body md:table-cell">
+                    {row.subscription?.themeId ?? 'classic'}
+                  </td>
+                  <td className="hidden px-4 py-3 text-body md:table-cell">
                     {row.subscription?.renewsAt
                       ? new Date(row.subscription.renewsAt).toLocaleDateString('en-US', {
                           month: 'short',

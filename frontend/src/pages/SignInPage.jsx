@@ -159,7 +159,7 @@ export default function SignInPage() {
         </div>
       }
     >
-      <section className="mb-6 rounded-2xl border border-brand-200 bg-brand-50 p-5">
+      <section className="mb-5 rounded-2xl border border-brand-200 bg-brand-50 p-4">
         <p className="text-xs font-bold uppercase tracking-widest text-brand-700">Demo access</p>
         <p className="mt-1 text-xs leading-relaxed text-body">
           Pick a role and jump straight into a seeded account — no password, no code.
@@ -194,14 +194,14 @@ export default function SignInPage() {
         </p>
       </section>
 
-      <div className="mb-6 inline-flex rounded-full border border-line bg-surface p-1">
+      <div className="mb-5 flex w-full rounded-full border border-line bg-surface p-1">
         {TABS.map((tab) => (
           <button
             key={tab.id}
             type="button"
             onClick={() => switchMode(tab.id)}
             aria-pressed={mode === tab.id}
-            className={`rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
+            className={`flex-1 rounded-full px-4 py-2 text-xs font-bold uppercase tracking-widest transition-colors duration-200 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 ${
               mode === tab.id ? 'bg-white text-ink shadow-soft' : 'text-mist hover:text-ink'
             }`}
           >
@@ -211,7 +211,7 @@ export default function SignInPage() {
       </div>
 
       {mode === 'password' ? (
-        <form onSubmit={handlePasswordSubmit} className="space-y-5">
+        <form onSubmit={handlePasswordSubmit} className="space-y-4">
           <TextField
             id="email"
             name="email"
@@ -250,7 +250,7 @@ export default function SignInPage() {
           </p>
         </form>
       ) : (
-        <form onSubmit={codeSent ? handleVerifyCode : handleRequestCode} className="space-y-5">
+        <form onSubmit={codeSent ? handleVerifyCode : handleRequestCode} className="space-y-4">
           <TextField
             id="email"
             name="email"

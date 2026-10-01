@@ -214,13 +214,13 @@ export default function AdminPlatformPage() {
         </h2>
 
         <div className="mt-4 overflow-x-auto">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[560px] text-left text-sm">
             <thead>
               <tr className="text-xs uppercase tracking-wide text-mist">
                 <th className="pb-2">Hospital</th>
                 <th className="pb-2">Tokens</th>
                 <th className="pb-2">Turns</th>
-                <th className="pb-2">Breakdown</th>
+                <th className="hidden pb-2 md:table-cell">Breakdown</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-line">
@@ -232,7 +232,7 @@ export default function AdminPlatformPage() {
                   </td>
                   <td className="py-3 font-semibold text-ink">{row.tokens}</td>
                   <td className="py-3 text-body">{row.turns}</td>
-                  <td className="py-3 text-xs text-mist">
+                  <td className="hidden py-3 text-xs text-mist md:table-cell">
                     {Object.entries(row.byKind ?? {}).map(([kind, value]) => `${kind} ${value}`).join(' · ') || '—'}
                   </td>
                 </tr>
@@ -343,7 +343,7 @@ export default function AdminPlatformPage() {
             ]}
           />
 
-          <div className="mt-4 grid grid-cols-2 gap-2">
+          <div className="mt-4 grid grid-cols-1 gap-2 sm:grid-cols-2">
             {FLAGS.map((flag) => (
               <label key={flag} className="flex items-center gap-2 rounded-xl bg-surface px-3 py-2 text-sm text-body">
                 <input

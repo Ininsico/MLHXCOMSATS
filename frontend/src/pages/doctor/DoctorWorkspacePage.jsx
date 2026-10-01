@@ -259,7 +259,7 @@ export default function DoctorWorkspacePage() {
             id="appointment"
             label="Working on"
             size="sm"
-            className="w-72"
+            className="w-full sm:w-72"
             value={selected}
             onChange={(event) => pickAppointment(event.target.value)}
             options={[
@@ -452,7 +452,7 @@ export default function DoctorWorkspacePage() {
         <h2 className="text-lg font-semibold text-ink">Referrals</h2>
 
         <form onSubmit={sendReferral} className="mt-4 flex flex-wrap items-end gap-3">
-          <div className="w-48">
+          <div className="w-full sm:w-48">
             <label htmlFor="referral-patient" className="text-xs font-semibold uppercase tracking-wide text-mist">
               Patient
             </label>
@@ -468,7 +468,7 @@ export default function DoctorWorkspacePage() {
             id="specialty"
             label="Refer to"
             size="sm"
-            className="w-44"
+            className="w-full sm:w-44"
             value={referral.toSpecialty}
             onChange={(event) => setReferral({ ...referral, toSpecialty: event.target.value })}
             options={['Cardiology', 'General Medicine', 'Pediatrics', 'Dermatology', 'Mental Health', 'Orthopedics'].map((value) => ({ value, label: value }))}
@@ -478,13 +478,13 @@ export default function DoctorWorkspacePage() {
             id="urgency"
             label="Urgency"
             size="sm"
-            className="w-36"
+            className="w-full sm:w-36"
             value={referral.urgency}
             onChange={(event) => setReferral({ ...referral, urgency: event.target.value })}
             options={URGENCY}
           />
 
-          <div className="min-w-[240px] flex-1">
+          <div className="w-full sm:min-w-[240px] sm:flex-1">
             <label htmlFor="reason" className="text-xs font-semibold uppercase tracking-wide text-mist">
               Reason
             </label>

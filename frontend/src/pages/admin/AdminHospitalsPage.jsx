@@ -19,7 +19,7 @@ export default function AdminHospitalsPage() {
       </div>
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-line shadow-soft">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-line bg-surface">
             <tr>
               <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
@@ -28,10 +28,10 @@ export default function AdminHospitalsPage() {
               <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
                 City
               </th>
-              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
+              <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist md:table-cell">
                 Contact
               </th>
-              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
+              <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist md:table-cell">
                 Rating
               </th>
               <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
@@ -51,8 +51,12 @@ export default function AdminHospitalsPage() {
                 <tr key={id} className="border-b border-line last:border-0">
                   <td className="px-4 py-3 font-medium text-ink">{hospital.name}</td>
                   <td className="px-4 py-3 text-body">{hospital.city}</td>
-                  <td className="px-4 py-3 text-body">{hospital.owner?.email ?? '—'}</td>
-                  <td className="px-4 py-3 text-body">{hospital.rating?.toFixed(1)}</td>
+                  <td className="hidden px-4 py-3 text-body md:table-cell">
+                    {hospital.owner?.email ?? '—'}
+                  </td>
+                  <td className="hidden px-4 py-3 text-body md:table-cell">
+                    {hospital.rating?.toFixed(1)}
+                  </td>
                   <td className="px-4 py-3">
                     <StatusChip status={hospital.status} />
                   </td>

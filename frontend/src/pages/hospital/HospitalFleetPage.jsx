@@ -245,7 +245,7 @@ export default function HospitalFleetPage() {
                           id={`unit-${id}`}
                           label="Dispatch unit"
                           size="sm"
-                          className="w-52"
+                          className="w-full sm:w-52"
                           value={String(ambulance.callSign || '')}
                           onChange={(event) => setAmbulance({ ...ambulance, callSign: event.target.value })}
                           options={[
@@ -402,7 +402,7 @@ export default function HospitalFleetPage() {
                 <SelectField
                   id={`status-${unit.id ?? unit._id}`}
                   size="sm"
-                  className="w-40"
+                  className="w-full sm:w-40"
                   value={unit.status}
                   onChange={(event) => api.emergency.updateAmbulance(unit.id ?? unit._id, { status: event.target.value }).then(load)}
                   options={STATUS_OPTIONS}

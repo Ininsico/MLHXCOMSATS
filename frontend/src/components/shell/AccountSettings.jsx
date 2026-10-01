@@ -1,6 +1,7 @@
 import { useState } from 'react'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import { Check } from 'lucide-react'
+import { PasswordField } from '../FormFields'
 import { useAuth } from '../../context/auth-context'
 
 const FIELD_CLASS =
@@ -10,8 +11,7 @@ const SUBMIT_CLASS =
   'inline-flex h-11 items-center justify-center rounded-lg bg-brand-700 px-6 text-sm font-semibold text-white transition-colors hover:bg-brand-800 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:opacity-60'
 
 export default function AccountSettings({ eyebrow, title, subtitle }) {
-  const { user, updateProfile, changePassword, signout } = useAuth()
-  const navigate = useNavigate()
+  const { user, updateProfile, changePassword } = useAuth()
 
   const [name, setName] = useState(user?.name ?? '')
   const [profileState, setProfileState] = useState('idle')
@@ -48,11 +48,6 @@ export default function AccountSettings({ eyebrow, title, subtitle }) {
       setPasswordError(err.message || 'Your password could not be changed.')
       setPasswordState('error')
     }
-  }
-
-  async function handleSignout() {
-    await signout()
-    navigate('/', { replace: true })
   }
 
   return (
@@ -135,44 +130,32 @@ export default function AccountSettings({ eyebrow, title, subtitle }) {
           </p>
 
           <form onSubmit={handlePassword} className="mt-5 space-y-5">
-            <div>
-              <label htmlFor="currentPassword" className="text-sm font-semibold text-ink">
-                Current password
-              </label>
-              <input
-                id="currentPassword"
-                name="currentPassword"
-                type="password"
-                autoComplete="current-password"
-                value={passwords.currentPassword}
-                onChange={(event) => {
-                  setPasswords((current) => ({ ...current, currentPassword: event.target.value }))
-                  setPasswordState('idle')
-                }}
-                className={FIELD_CLASS}
-              />
-            </div>
+            <PasswordField
+              id="currentPassword"
+              name="currentPassword"
+              label="Current password"
+              autoComplete="current-password"
+              value={passwords.currentPassword}
+              onChange={(event) => {
+                setPasswords((current) => ({ ...current, currentPassword: event.target.value }))
+                setPasswordState('idle')
+              }}
+            />
 
-            <div>
-              <label htmlFor="newPassword" className="text-sm font-semibold text-ink">
-                New password
-              </label>
-              <input
-                id="newPassword"
-                name="newPassword"
-                type="password"
-                autoComplete="new-password"
-                required
-                minLength={8}
-                value={passwords.newPassword}
-                onChange={(event) => {
-                  setPasswords((current) => ({ ...current, newPassword: event.target.value }))
-                  setPasswordState('idle')
-                }}
-                className={FIELD_CLASS}
-              />
-              <p className="mt-1.5 text-xs text-mist">At least 8 characters.</p>
-            </div>
+            <PasswordField
+              id="newPassword"
+              name="newPassword"
+              label="New password"
+              hint="At least 8 characters."
+              autoComplete="new-password"
+              required
+              minLength={8}
+              value={passwords.newPassword}
+              onChange={(event) => {
+                setPasswords((current) => ({ ...current, newPassword: event.target.value }))
+                setPasswordState('idle')
+              }}
+            />
 
             {passwordError ? (
               <p className="text-sm font-medium text-danger">{passwordError}</p>
@@ -189,21 +172,6 @@ export default function AccountSettings({ eyebrow, title, subtitle }) {
           </form>
         </section>
       </div>
-
-      <section className="mt-6 rounded-2xl border border-line bg-surface p-6">
-        <h2 className="text-base font-semibold text-ink">Session</h2>
-        <p className="mt-1 text-sm text-body">
-          Signing out ends this session on this device. You can sign back in with your password
-          or an emailed code.
-        </p>
-        <button
-          type="button"
-          onClick={handleSignout}
-          className="mt-4 inline-flex h-11 items-center justify-center rounded-lg border border-line bg-white px-6 text-sm font-semibold text-body transition-colors hover:border-danger hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2"
-        >
-          Sign out
-        </button>
-      </section>
     </>
   )
 }

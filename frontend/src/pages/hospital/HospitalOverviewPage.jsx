@@ -247,7 +247,7 @@ export default function HospitalOverviewPage() {
             </p>
           )}
 
-          <dl className="mt-6 grid grid-cols-2 gap-4">
+          <dl className="mt-6 grid grid-cols-1 gap-4 sm:grid-cols-2">
             <div className="rounded-xl border border-line px-4 py-3">
               <dt className="text-xs font-semibold uppercase tracking-wide text-mist">
                 Active doctors
