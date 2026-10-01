@@ -59,7 +59,13 @@ Aurora is built so that:
   plan is switched, manages the clinical corpus, flags features per hospital, reads the audit
   trail, and can export or erase a patient's data;
 - the **clinical AI** — chest X-ray analysis, RAG over a local corpus, therapy, triage support —
-  runs locally on the hospital machine, with a cloud text model used only where the spec allows.
+  runs locally on the hospital machine, with a cloud text model used only where the spec allows;
+- **money** moves on rails that fit the market: plans are priced in PKR, charged in USDT through
+  the hospital's own Binance account, and verified automatically from incoming transfers, with the
+  rate recorded on every payment;
+- an **emergency** is a first-class flow, not a phone number: SOS and ambulance requests reach the
+  nearest hospital with a location, dispatch follows a ladder the family can watch live, and every
+  escalation from the AI agents lands in one console.
 
 ---
 
@@ -317,6 +323,12 @@ live tracking page through the patient's account.
 | Therapy | `/dashboard/therapy` | private room, per-patient memory, crisis path |
 | Emergency | `/dashboard/emergency` | SOS button, ambulance request, live tracking |
 | Settings | `/dashboard/settings` | name, email verification, password, sign out |
+| Care plans | `/dashboard/care-plans` | targets per condition, check-in cadence, progress against the latest reading |
+| Family | `/dashboard/care-plans` | dependents with explicit, revocable guardian access (`x-acting-for`) |
+| Vaccination card | `/dashboard/vaccinations` | records with verification codes and a public verify page |
+| Pay with Binance | `/dashboard/pay` | pay for a visit: exact amount, destination, live progress, receipt |
+| Pre-visit form | `/dashboard/appointments` | what the patient reports before the visit; feeds the AI note draft |
+| Waiting list | `/dashboard/appointments` | join, receive an offer when a slot frees, take it in one tap |
 
 ### Doctor
 
@@ -609,11 +621,18 @@ alerts panel.
   it — over the limit, the agent stops calling the model, tells the patient to ring the front desk,
   and writes a `quota.blocked` audit line. Read/set endpoints live under
   `/api/admin/hospitals/:id/quota`.
-- **Subscription requests with payment verification**: a hospital asks for a plan with a payment
-  reference; the admin **verifies the payment first**; approval is refused with a 409 until then.
-  On approval the hospital's plan, theme and renewal date are written and an audit line recorded.
-  Verified live: `limit=100 allowed=False` on a tightened quota, and a plan switched to `growth`
-  with its renewal date set.
+- **Subscription payments are automatic.** A hospital asks for a plan and the payment request opens
+  itself with the **converted amount** (PKR converted to USDT at a configured rate, recorded on the
+  payment alongside the rupee price), the Binance destination and a reference. Receipt is verified
+  from **incoming transfers only** — deposit history, Binance Pay history, or a rise in holdings for
+  that coin — and an **overpayment counts as paid** with the surplus recorded, while an underpayment
+  is reported with the exact outstanding amount. Verification marks the plan request paid; the
+  admin's approval then activates the plan and records an audit line. A plan cannot be switched by
+  clicking it: paid plans require the verified payment, free plans apply instantly, and cancelling a
+  payment request withdraws the plan request behind it so the hospital can start again.
+  The portal shows a five-step progress bar, a **manual "Check payment now"** trigger, a
+  **Cancel request** button, the subscription **history timeline** built from the audit trail, and a
+  checkout **dialog** that states the exact figure to transfer.
 - **Feature flags** per hospital (`ai`, `voice`, `whatsapp`, `therapy`, `nurse`, `marketplace`,
   `lab`).
 - **Corpus manager**: paste a guideline → it is embedded → reindex → stats. Added documents are
@@ -814,6 +833,20 @@ Stated plainly, because a demo should be honest:
 **Product**
 
 - Marketplace offers have endpoints and client methods but no buttons on the marketplace page yet.
+- The **FX rate is configuration, not live** (`PKR_PER_USDT`, default 330). The rate used is stored
+  on every payment, so history stays truthful, but it needs a rate source and an admin override.
+- Payment verification is proven by **simulated arrivals and rewound baselines**, not by a real
+  transfer landing while the code watched — the paths are exercised, the Binance side is not.
+- **Plan cancellations leave a cancelled plan request in the trail** by design, so the admin queue
+  shows history rather than nothing; the pending queue itself is what matters and it clears.
+- **The WhatsApp bridge uses whatsapp-web.js, an unofficial client.** Meta can ban a number for it,
+  and a hospital's number is a business asset — the official Cloud API is the fix.
+- Re-selecting the plan you already own returns a 500 instead of a no-op (found, not yet fixed);
+  the UI disables that button, so it is only reachable by calling the API directly.
+- Care-plan **check-ins are scheduled but nothing sends them yet** — the page promises a cadence the
+  scheduler does not deliver. The same is true of medication reminders.
+- The appointment payment page uses its own card rather than the newer checkout dialog, and a
+  patient can pay an amount that is not tied to an invoice.
 - Appointment slots come from a fixed 09:00–17:00 half-hour grid per doctor, not per-doctor
   availability windows.
 - Plan "purchase" is request → verification → activation; no card gateway is wired (the adapter is
@@ -824,14 +857,16 @@ Stated plainly, because a demo should be honest:
 
 ## 22. Roadmap
 
-1. Marketplace offer buttons and sold-price display on listing cards.
-2. Outbox assertions rewritten against stored status; suites fully green.
-3. Per-collection vector isolation on the sidecar, then per-patient collections.
-4. Webhook delivery with retries and a dead-letter view.
-5. Per-doctor availability windows replacing the fixed grid.
-6. Payment gateway (Stripe test mode) behind the existing adapter.
-7. Voice and WhatsApp agents that reschedule and cancel, not only book.
-8. Nurse reminders sweep (`REMINDERS_ENABLED`) surfaced in the hospital UI.
+1. Care-plan and medication check-in sweep, so the cadence the UI promises actually sends.
+2. Page-level tabs on Page & plan (Account · Plans · Themes) rather than one long scroll.
+3. Wire the checkout dialog into appointment payments and tie each payment to an invoice line.
+4. Reconcile unmatched deposits by hand in the admin console; live FX rate with an override.
+5. Move the WhatsApp bridge to the official Cloud API, with SMS/IVR as a fallback.
+6. Marketplace offer buttons and sold-price display on listing cards.
+7. Outbox assertions rewritten against stored status; the suites fully green.
+8. Per-collection vector isolation on the sidecar, then per-patient collections.
+9. Webhook delivery with retries and a dead-letter view.
+10. Agents that reschedule and cancel, not only book.
 
 ---
 
