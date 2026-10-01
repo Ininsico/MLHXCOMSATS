@@ -44,7 +44,7 @@ export default function AuthSplitLayout({
       <div className="w-full max-w-md">
         <Link
           to="/"
-          className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-mist transition-colors hover:text-ink"
+          className="mb-8 inline-flex items-center gap-2 text-sm font-semibold text-mist transition-colors hover:text-ink xl:-ml-10"
         >
           <ArrowLeft size={15} />
           Back to home

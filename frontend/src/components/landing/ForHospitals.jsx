@@ -23,7 +23,7 @@ export default function ForHospitals() {
 
   return (
     <section id="for-hospitals" ref={ref} className="scroll-mt-20 bg-white py-16 md:py-24">
-      <div className="mx-auto max-w-6xl px-6">
+      <div className="page-container">
         <div className="relative overflow-hidden rounded-2xl bg-brand-950 px-8 py-14 md:px-16 md:py-20">
           <motion.div
             aria-hidden="true"
@@ -81,6 +81,14 @@ export default function ForHospitals() {
                   Sign in to the portal
                 </Link>
               </div>
+
+              <Link
+                to="/for-hospitals"
+                className="mt-6 inline-flex items-center gap-2 text-sm font-semibold text-brand-300 transition-colors hover:text-white"
+              >
+                Everything hospitals get on Aurora
+                <ArrowRight size={14} strokeWidth={2.5} />
+              </Link>
             </Reveal>
 
             <Reveal className="mx-auto w-full max-w-md">

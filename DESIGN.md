@@ -117,7 +117,18 @@ Font: **Poppins** (400/500/600/700/800), loaded in `main.css`; fallback
 
 - Tailwind default scale (4px base). Stick to `1, 2, 3, 4, 6, 8, 10, 12, 16, 20, 24` for
   component spacing; no arbitrary one-offs except layout math (max-widths, hero heights).
-- Container: `max-w-6xl` (1152px) centered with `px-6`. One container per page.
+- Container: **`.page-container`**, defined once in `main.css` — `width: 100%`,
+  `max-width: 96rem` (1536px), `margin-inline: auto`, and `padding-inline` stepping
+  `1rem → sm:1.5rem → lg:2rem → xl:2.5rem → 1600px:3rem` (16 / 24 / 32 / 40 / 48px). Every
+  public band uses it — navbar row, hero, section, CTA panel, footer — so the whole site shares
+  one left/right edge. Do not hand-roll `mx-auto max-w-* px-*` on a public section again.
+  Full-width backgrounds stay full-width; only the inner container is bounded.
+- Inside it, section headers keep the `max-w-2xl` recipe and long prose keeps a readable measure
+  (`max-w-2xl` / `max-w-3xl`) even when its panel runs full width. One container per page.
+- **Documented exception:** immersive single-purpose surfaces run full-bleed across the shell's
+  content area, using the shell's own `px-4 sm:px-6 lg:px-8` as their padding instead of the
+  public container — currently the patient-facing hospital profile and the AI assistant /
+  Therapy room (the room's chat and memory columns stay a balanced grid, not a centred strip).
 - Section rhythm: `py-24` desktop, `py-16` mobile.
 - Breakpoints: `sm` 640, `md` 768, `lg` 1024, `xl` 1280.
 - Minimum supported width **360px** — no horizontal scroll at any width.
@@ -201,9 +212,68 @@ const EASE = [0.23, 1, 0.32, 1];
 
 ### Navbar
 - Fixed, `bg-white/70 backdrop-blur-xl border-b border-line`, `h-20`.
-- Left: logo, then the landing section anchors. Right: one route pill (`Explore` for guests,
-  patients, and admins; `Hospital portal` for hospital accounts), plus one text link when
-  signed out (`Sign in`) and one small primary (`Get started` / `Open Aurora`). Nothing else.
+- **Documented exception to §4:** the navbar row is full-bleed — no `max-w-6xl` cap — so the
+  logo sits at the page edge and the action group at the far right, instead of the whole bar
+  sitting in a narrow centred band. One flex row, three zones: `flex-1` logo zone, centred nav
+  zone, `flex-1` action zone (`justify-end`). The equal `flex-1` sides put the links on the
+  true centre line whenever they fit. Edge padding scales `px-6 → md:px-10 → xl:px-16 →
+  2xl:px-20`; the zone gap (`xl:gap-12`) keeps the logo and actions well clear of the centre
+  links. Links sit `gap-7` apart (`xl:gap-8`), actions `gap-4` (`xl:gap-6`). Below `lg` the
+  centre zone is hidden and the bar reads logo-left / actions-right. Page *content* still uses
+  the §4 container.
+- Left: logo, then the marketing page links — `Features` (`/features`), `How it works`
+  (`/how-it-works`), `For hospitals` (`/for-hospitals`), `About` (`/about`), `Contact`
+  (`/contact`) — every one a `Link` to its own route, never an in-page anchor.
+  Right: one route pill (`Explore` for guests, patients, and admins; `Hospital portal` for
+  hospital accounts), plus one text link when signed out (`Sign in`) and one small primary
+  (`Get started` / `Open Aurora`). Nothing else.
+
+### About page
+- Public route `/about`, guest-only like the other marketing routes. Composed with the landing
+  `Navbar` and `Footer`: intro header (eyebrow, one `h1`, lead), story section
+  (`md:grid-cols-2` — copy plus a three-point card), six-card "what's inside" grid on the
+  `Features` card recipe, one deep `bg-brand-950` principles panel, and a closing CTA row.
+- Same container (`max-w-6xl px-6`), section rhythm (`py-16 md:py-24`), `Reveal` entrances,
+  and card/panel rules as the landing sections; the intro clears the fixed navbar with
+  `pt-32 pb-16 md:pt-40 md:pb-24`.
+
+### Contact page
+- Public route `/contact`, guest-only like the other marketing routes. Landing `Navbar` and
+  `Footer`, same container and section rhythm as the About page: intro header (`pt-32 pb-16
+  md:pt-40 md:pb-24`), then a `lg:grid-cols-5` split — `col-span-2` contact-info card (icon
+  circle + micro-label + value rows on `divide-y divide-line`), `col-span-3` message form.
+- Form fields reuse `TextField`; the message textarea uses the shared field shell on white with
+  a `text-xs text-mist` privacy line. Submit is the landing primary pill, full width. On submit
+  it swaps to a `border-brand-200 bg-brand-50` confirmation panel with a `bg-white` icon circle,
+  the reply-time line, and a secondary "Send another message" — **frontend-only, no mailbox**,
+  so the panel says so and points at the support address.
+- Quick help: a `max-w-3xl` accordion — one `border-line`/`shadow-soft` panel, `divide-y`
+  items, each an `h3 > button` with `aria-expanded` / `aria-controls`, a `ChevronDown` that
+  rotates 180° in 200ms, and a panel with `role="region"` + `aria-labelledby`. First item open.
+- Closes with the deep `bg-brand-950` CTA/trust panel (eyebrow `brand-300`, white headline,
+  `white/70` copy, white primary + `border-white/20` ghost per §7, check bullets). Contact
+  details are obvious demo placeholders.
+
+### Marketing pages (Features, How it works, For hospitals)
+- Three standalone guest-only routes — `/features`, `/how-it-works`, `/for-hospitals` — each a
+  real page, not a rehash of a landing section. Same shell as About/Contact (landing `Navbar` +
+  `Footer`), same container (`max-w-6xl px-6`), rhythm (`py-16 md:py-24`), intro
+  (`pt-32 pb-16 md:pt-40 md:pb-24`), card, and deep-panel recipes; entrance via `Reveal` /
+  `RevealGroup` / `RevealItem`.
+- `/features` — two-tone intro, nine-card capability grid (`sm:grid-cols-2 lg:grid-cols-3`:
+  discovery, appointments, records, labs, vitals, emergency SOS, AI doctors, therapy, care
+  navigation), a patient/hospital two-card split with check bullets, then a deep CTA panel.
+- `/how-it-works` — six-step journey on a vertical rail (`max-w-3xl`, numbered
+  `border-brand-200 bg-white` circles on a `w-px bg-line` line, three micro-points per step),
+  then a deep CTA panel.
+- `/for-hospitals` — the B2B page: apply → review → portal onboarding on the three-card recipe,
+  a six-card console grid (appointments, doctors & staff, laboratory, inventory & pharmacy,
+  emergency & fleet, verification), a verification + sample public-profile split (the sample
+  carries `Verified` and reads "demo data only"), and closes on the deep panel with why-hospitals
+  join bullets plus both hospital CTAs.
+- The landing keeps short previews that link out: three feature cards + "See all features",
+  the three-step strip + "See the full journey", and the hospital panel + "Everything hospitals
+  get on Aurora". Landing section ids stay for direct anchors.
 
 ### Auth pages
 - Split layout via `AuthSplitLayout`: the form on one side (signup right, signin left)
@@ -238,18 +308,26 @@ const EASE = [0.23, 1, 0.32, 1];
 ### Admin console
 - Signed out: the dark `AdminFrame` card (like the auth split panel) with the two-mode
   sign-in — password or emailed code.
-- Signed in: a sidebar shell (`components/shell/DashboardShell.jsx`, shared with the patient
-  area). Sidebar `w-64` expanded / `w-20` collapsed rail (icon-only, labels hidden with
-  `lg:hidden`, toggle in the topbar, state kept in `localStorage`);
-  items are `rounded-lg` rows — active `bg-brand-50 text-brand-800`, idle `text-body`
-  hover `bg-surface`. The pending-approval count rides the Applications item as a
-  `bg-brand-700` pill (a dot when collapsed). Brand mark + `Admin` chip at the top, account
-  email + sign out at the bottom.
+- Signed in: the shared shell (`components/shell/DashboardShell.jsx`) rendered with
+  `variant="admin"` — the other consoles keep the base chrome. Sidebar `w-64` expanded /
+  `w-20` collapsed rail (icon-only, labels hidden with `lg:hidden`, toggle in the topbar,
+  state kept in `localStorage`); items are `rounded-lg` rows on a 16px left rhythm (header
+  `px-4`, nav `px-2`, rows `pl-2`, sub-items `pl-8`) — active `bg-brand-50 text-brand-800`
+  with a 3px `bg-brand-600` indicator bar, idle `text-body` hover `bg-surface`. The
+  pending-approval count rides the Applications item as a `bg-brand-700` pill (a dot when
+  collapsed). Brand mark + `Admin` chip at the top; at the bottom a profile block — avatar
+  initial, account email (`truncate`), "Admin account" line — above the sign-out row.
+- The rail centres exactly: nav rows and sign out `lg:pl-[23px]`, the profile avatar run
+  `lg:pl-[14px]`, and the "A" monogram `hidden lg:grid lg:left-[22px]` — icons, avatar and
+  monogram all land on the 80px rail's centre line.
 - Below `lg` the sidebar is an off-canvas drawer: `translate-x` transition, backdrop
-  `bg-brand-950/20 backdrop-blur-sm`, closes on backdrop click, Escape, or navigation.
+  `bg-brand-950/20 backdrop-blur-sm`, closes on backdrop click, Escape, or navigation. The
+  drawer carries the profile block, which is where the account email lives below `sm`.
 - Topbar: sticky, `h-16`, `bg-white/80 backdrop-blur-xl border-b border-line`, with the
-  drawer button (mobile), the collapse toggle (desktop), the current section name on the
-  left, and any `topbarExtra` chip plus the account email on the right.
+  drawer button (mobile), the collapse toggle (desktop), then the current section's icon tile
+  (`h-8 w-8 bg-brand-50 text-brand-700`) and name on the left (title truncates), and any
+  `topbarExtra` chip plus the account email on the right — email truncates
+  (`max-w-[200px] lg:max-w-xs`) and shows from `sm` up.
 - Sections are routes — `/admin` overview, `/admin/applications`, `/admin/verification`,
   `/admin/hospitals`, `/admin/subscriptions`, `/admin/accounts` — sharing one data load
   through the outlet context. Cards, tables and chips reuse the standard patterns above.
@@ -257,8 +335,9 @@ const EASE = [0.23, 1, 0.32, 1];
   the shared curve while the content wrapper's `padding-left` follows; the inner column keeps
   a fixed `w-64` and the aside clips it, so no text reflows. Labels, the account email, the
   count pill and the logo mark cross-fade with the "A" monogram over 200ms, and item padding
-  eases to `lg:pl-[31px]` so icons glide to the centre of the rail. The pending dot rides the
-  icon's corner while collapsed.
+  eases to the rail's centred value — `lg:pl-[31px]` on the base chrome, `[23px]`/`[14px]`/
+  `[22px]` on the admin chrome above — so icons glide to the centre of the rail. The pending
+  dot rides the icon's corner while collapsed.
 - Charts are hand-rolled SVG (`components/admin/charts/`) — no chart library:
   `AreaChart` (smoothed 14-day signups with a crosshair, hover tooltip and legend totals),
   `DonutChart` (status and verification breakdowns with a centre total and legend), and
@@ -271,19 +350,43 @@ const EASE = [0.23, 1, 0.32, 1];
 - `/dashboard` is the patient's home after sign-in: greeting, an email-confirmation banner
   while unverified, three action cards (Find a hospital, Ask Aurora, Account settings), and a
   "Highly rated hospitals" row of compact cards with a View pill.
-- The same `DashboardShell` as the admin console carries the sidebar — Overview
-  (`/dashboard`), Hospitals (`/explore`), Settings (`/dashboard/settings`) — with the chip
-  reading "Patient". Sidebar, rail collapse and drawer behaviour are identical to the admin
-  rules below.
+- The same `DashboardShell` carries the sidebar — Overview (`/dashboard`), Hospitals
+  (`/explore`), Settings (`/dashboard/settings`) — with the chip reading "Patient". Sidebar,
+  rail collapse and drawer behaviour use the shared base chrome (the admin console layers its
+  own `variant="admin"` chrome on top; see the admin console rules).
 - `/explore` and `/explore/:id` live inside this shell (no landing navbar). The shell's `main`
   supplies padding, so page content only adds its own `max-w-*` container.
 - Settings: profile (name), email plus confirmation state, password change, and a sign-out
   panel; every form shows saving/saved/error states.
 
+### Emergency SOS page (patients)
+- `/dashboard/emergency`, inside the patient shell on one full-width `space-y-6` column — the
+  shell supplies the page padding; the page adds no `max-w` cap.
+- **Red is an accent, never a page fill** — icon circle, eyebrow, active chip, the SOS button and
+  the live card's border. Green carries normal state (reached ladder steps, "No active request",
+  the send button); `cancelled` is the only red status chip. `arrived` and `completed` read the
+  same green, in-progress steps stay neutral.
+- Compact banner (not a tall hero): eyebrow, `h1` "SOS & ambulance" with the `Siren` in a
+  `bg-danger-bg` circle, one-line lead, and a right-hand status indicator — `SOS active`
+  (`border-danger/30 bg-danger-bg text-danger`, dot `animate-pulse`) or `No active request`
+  (`border-brand-200 bg-brand-50 text-brand-700`).
+- Live request card (`border-danger/30 bg-white`): header row of `Live — …` + `StatusChip` with a
+  secondary **Cancel request** (`w-full sm:w-auto`, hover `border-danger text-danger`), then
+  `lg:grid-cols-2` — left is the ladder (a `w-px bg-line` rail, `ring-4 ring-white` dots, reached
+  `bg-brand-600`) plus a three-cell `divide-x` metrics `dl` for ETA / distance / ambulance; right
+  is the route panel (`bg-surface`, plot vertically centred, dot legend).
+- Bottom: `lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)] gap-6` — a proportional 40/60 split, so
+  both columns grow with the page: the SOS button (horizontal `py-5`, icon in a `bg-white/15`
+  circle) above the ambulance form on the left, emergency history on the right. The SOS button is
+  not a tall block; it must not push the action below the fold.
+- Form fields are shared `TextField`s with visible labels and `space-y-4`; history records are an
+  icon circle + hospital name + `StatusChip`, then a `pl-[38px]` meta `dl` (kind + time, pickup,
+  reason) on `divide-y divide-line`. Both grids collapse below `lg`; controls go full width.
+
 ### Routing & guards
-- Guest-only routes (`/`, `/signin`, `/signup`, `/forgot-password`, `/hospital/signin`,
-  `/hospital/apply`) are wrapped in `GuestOnly`; a signed-in visitor is redirected to
-  `homeFor(role)` — patient → `/dashboard`, hospital → `/hospital`, admin → `/admin`.
+- Guest-only routes (`/`, `/about`, `/signin`, `/signup`, `/forgot-password`,
+  `/hospital/signin`, `/hospital/apply`) are wrapped in `GuestOnly`; a signed-in visitor is
+  redirected to `homeFor(role)` — patient → `/dashboard`, hospital → `/hospital`, admin → `/admin`.
 - Protected areas are wrapped in `RequireRole` (pass `roles`, or nothing for any signed-in
   account); hospital accounts that are not `active` are sent to `/hospital/pending`.
 - Guards own every redirect — pages never navigate away just because someone is signed in.
@@ -308,6 +411,15 @@ const EASE = [0.23, 1, 0.32, 1];
   logging (in / out / set exact count) and low-stock warnings.
 - Page & plan: the marketplace — pick a plan, then apply any theme that plan includes, with a
   live preview beside it. Verification: up to five labelled documents and the review status.
+- Profile (`/hospital/profile`) — the listing editor. One `max-w-6xl` page, a `flex-wrap` header
+  with a secondary **Preview public listing** action, then
+  `lg:grid-cols-[minmax(0,1fr)_320px]`: the form card on the left and a `lg:sticky lg:top-24`
+  rail on the right holding the read-only "Public listing details" summary (name, verification
+  chip, specialties count) plus a tips card. The form is four `<section>`s split by
+  `border-t border-line pt-8`, each with a micro-label heading and one `text-mist` hint line:
+  Hospital information, Contact & location, Specialties, Hospital logo. Field pairs ride
+  `sm:grid-cols-2`; the description textarea and specialties stay full width. Ends with the
+  primary **Save changes** and a secondary Cancel `Link` in a `border-t` action bar.
 - Nav badges: pending appointment requests, open lab orders, low stock, and a verification
   prompt when documents were rejected.
 
@@ -331,7 +443,8 @@ const EASE = [0.23, 1, 0.32, 1];
 ### Doctor area (doctor accounts)
 - `/doctor` is the doctor's home: Overview (stats, today's schedule, next up, and an inline
   "My details" form for specialty/department/phone), Appointments, Timetable, Laboratory and
-  Settings. Same `DashboardShell`, chip reads "Doctor", status chip in the topbar.
+  Settings. Same `DashboardShell` (base chrome), chip reads "Doctor", status chip in the
+  topbar.
 - Doctors sign in through the normal `/signin` (password or emailed code) and land on
   `/doctor`; a doctor with no linked hospital profile sees an explanatory card.
 - Laboratory (`/doctor/lab`): request a test (patient name, optional account email, test,
@@ -381,6 +494,14 @@ const EASE = [0.23, 1, 0.32, 1];
 ### Cards
 - White + 1px `border-line` + `rounded-2xl` + `shadow-soft` + `p-6`. Tinted variant:
   `bg-brand-50/60`. At most one level of nesting.
+
+### Scroll regions
+- A panel that scrolls keeps `overflow-y: auto` and drops the bar with `.scrollbar-none`
+  (`scrollbar-width: none` for Firefox, `-ms-overflow-style: none` for legacy Edge, and
+  `::-webkit-scrollbar { display: none }` for Chrome/Edge/Safari — defined in `main.css`).
+  Wheel, trackpad, touch and keyboard scrolling all keep working.
+- **Never `overflow: hidden` on a region that must scroll** — that removes the scrolling, not
+  just the bar. Used by the AI assistant chat log and the "What Aurora remembers" panel.
 
 ### Explore (patients only)
 - The whole explore area sits behind patient (or admin) sign-in; guests are sent to

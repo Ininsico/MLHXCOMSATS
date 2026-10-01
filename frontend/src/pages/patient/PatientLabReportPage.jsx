@@ -91,7 +91,7 @@ export default function PatientLabReportPage() {
 
   return (
     <>
-      <div className="mx-auto max-w-3xl print:hidden">
+      <div className="print:hidden">
         <Link
           to="/dashboard/lab"
           className="inline-flex items-center gap-2 text-sm font-semibold text-mist transition-colors hover:text-ink"
@@ -102,11 +102,11 @@ export default function PatientLabReportPage() {
       </div>
 
       {state === 'loading' ? (
-        <p className="mx-auto mt-8 max-w-3xl text-sm text-mist">Loading the report…</p>
+        <p className="mt-8 text-sm text-mist">Loading the report…</p>
       ) : null}
 
       {state === 'missing' ? (
-        <div className="mx-auto mt-8 max-w-3xl rounded-2xl border border-line bg-white p-6 shadow-soft">
+        <div className="mt-8 rounded-2xl border border-line bg-white p-6 shadow-soft">
           <h1 className="text-xl font-semibold text-ink">Report not available</h1>
           <p className="mt-2 text-sm leading-relaxed text-body">
             This report has not been released yet, or it belongs to another account.
@@ -121,14 +121,14 @@ export default function PatientLabReportPage() {
       ) : null}
 
       {state === 'error' ? (
-        <p className="mx-auto mt-8 max-w-3xl text-sm text-danger">
+        <p className="mt-8 text-sm text-danger">
           Couldn&apos;t load that report right now.
         </p>
       ) : null}
 
       {state === 'ready' && report ? (
         <>
-          <div className="mx-auto mt-6 flex max-w-3xl flex-wrap items-center justify-end gap-3 print:hidden">
+          <div className="mt-6 flex flex-wrap items-center justify-end gap-3 print:hidden">
             <button
               type="button"
               onClick={() => createShare(24)}
@@ -152,10 +152,10 @@ export default function PatientLabReportPage() {
             </button>
           </div>
 
-          {shareError ? <p className="mx-auto mt-4 max-w-3xl text-sm font-medium text-danger print:hidden">{shareError}</p> : null}
+          {shareError ? <p className="mt-4 text-sm font-medium text-danger print:hidden">{shareError}</p> : null}
 
           {shareUrl ? (
-            <div className="mx-auto mt-4 flex max-w-3xl flex-wrap items-center gap-3 rounded-xl border border-brand-200 bg-brand-50 px-5 py-4 print:hidden">
+            <div className="mt-4 flex flex-wrap items-center gap-3 rounded-xl border border-brand-200 bg-brand-50 px-5 py-4 print:hidden">
               <p className="min-w-0 flex-1 truncate text-xs text-body">{shareUrl}</p>
               <button
                 type="button"
@@ -169,7 +169,7 @@ export default function PatientLabReportPage() {
           ) : null}
 
           {shares.length ? (
-            <div className="mx-auto mt-4 max-w-3xl rounded-xl border border-line bg-white px-5 py-4 print:hidden">
+            <div className="mt-4 rounded-xl border border-line bg-white px-5 py-4 print:hidden">
               <p className="text-xs font-semibold uppercase tracking-wide text-mist">Active links</p>
               <ul className="mt-3 space-y-2">
                 {shares.map((entry) => (
@@ -195,7 +195,7 @@ export default function PatientLabReportPage() {
             </div>
           ) : null}
 
-          <article className="mx-auto mt-6 max-w-3xl rounded-2xl border border-line bg-white p-8 shadow-soft print:mt-0 print:max-w-none print:rounded-none print:border-0 print:p-0 print:shadow-none">
+          <article className="mt-6 rounded-2xl border border-line bg-white p-8 shadow-soft print:mt-0 print:max-w-none print:rounded-none print:border-0 print:p-0 print:shadow-none">
             <header className="flex flex-wrap items-start justify-between gap-4 border-b border-line pb-6">
               <div className="flex items-start gap-4">
                 {report.hospital?.logoUrl ? (

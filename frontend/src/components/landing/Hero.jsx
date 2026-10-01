@@ -35,7 +35,7 @@ export default function Hero() {
 
       <motion.div
         style={reduceMotion ? undefined : { y, scale, opacity }}
-        className="relative z-10 mx-auto flex min-h-[110vh] max-w-6xl flex-col items-center justify-center px-6 pt-20 pb-24 text-center"
+        className="page-container relative z-10 flex min-h-[110vh] flex-col items-center justify-center pt-20 pb-24 text-center"
       >
         <motion.div
           {...enter(0.3, 30, 1.2)}

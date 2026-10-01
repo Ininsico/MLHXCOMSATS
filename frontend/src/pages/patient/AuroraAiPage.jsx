@@ -27,7 +27,7 @@ export default function AuroraAiPage({ mode = 'doctors' }) {
   const [text, setText] = useState('')
   const [state, setState] = useState('idle')
   const [error, setError] = useState('')
-  const endRef = useRef(null)
+  const scrollRef = useRef(null)
 
   useEffect(() => {
     let cancelled = false
@@ -76,7 +76,10 @@ export default function AuroraAiPage({ mode = 'doctors' }) {
   }, [persona])
 
   useEffect(() => {
-    endRef.current?.scrollIntoView({ behavior: 'smooth', block: 'end' })
+    const node = scrollRef.current
+    if (!node) return
+
+    node.scrollTo({ top: node.scrollHeight, behavior: 'smooth' })
   }, [messages, state])
 
   const send = useCallback(
@@ -161,8 +164,8 @@ export default function AuroraAiPage({ mode = 'doctors' }) {
   }
 
   return (
-    <div className="mx-auto max-w-6xl">
-      <header className="flex flex-wrap items-center justify-between gap-4">
+    <div className="flex h-[calc(100dvh-8rem)] w-full flex-col overflow-hidden">
+      <header className="flex shrink-0 flex-wrap items-center justify-between gap-4">
         <div className="flex items-center gap-4">
           <span className={`inline-flex h-11 w-11 items-center justify-center rounded-xl ${accentClass(persona.accent)}`}>
             <Brain size={20} />
@@ -192,9 +195,9 @@ export default function AuroraAiPage({ mode = 'doctors' }) {
         ) : null}
       </header>
 
-      <div className="mt-6 grid gap-6 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <section className="flex min-h-[520px] flex-col rounded-2xl border border-line bg-white shadow-soft">
-          <div className="flex-1 space-y-4 overflow-y-auto p-6">
+      <div className="mt-6 grid min-h-0 flex-1 gap-6 overflow-y-auto lg:grid-cols-[minmax(0,1fr)_340px] lg:overflow-hidden xl:grid-cols-[minmax(0,1fr)_400px]">
+        <section className="flex h-[70dvh] min-h-0 flex-col rounded-2xl border border-line bg-white shadow-soft lg:h-auto">
+          <div ref={scrollRef} className="scrollbar-none min-h-0 flex-1 space-y-4 overflow-y-auto p-6">
             {!messages.length ? (
               <div>
                 <p className="text-sm text-body">{persona.blurb}</p>
@@ -246,8 +249,6 @@ export default function AuroraAiPage({ mode = 'doctors' }) {
                 </span>
               </div>
             ) : null}
-
-            <div ref={endRef} />
           </div>
 
           {crisis ? (
@@ -301,7 +302,7 @@ export default function AuroraAiPage({ mode = 'doctors' }) {
           </p>
         </section>
 
-        <aside className="space-y-4">
+        <aside className="scrollbar-none space-y-4 lg:min-h-0 lg:overflow-y-auto">
           <section className="rounded-2xl border border-line bg-white p-5 shadow-soft">
             <h2 className="text-sm font-semibold text-ink">What Aurora remembers</h2>
             <p className="mt-1 text-xs text-mist">

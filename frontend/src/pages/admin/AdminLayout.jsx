@@ -366,6 +366,7 @@ export default function AdminLayout() {
       storageKey="admin"
       userEmail={user.email}
       onSignout={handleSignout}
+      variant="admin"
     >
       {dataError ? <p className="mb-6 text-sm text-danger">{dataError}</p> : null}
 
