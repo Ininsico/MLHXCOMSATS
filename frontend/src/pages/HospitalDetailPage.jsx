@@ -394,7 +394,7 @@ export default function HospitalDetailPage() {
     : '#'
 
   return (
-    <div className={`mx-auto max-w-5xl rounded-2xl p-4 sm:p-6 ${theme.page}`}>
+    <div className={`w-full rounded-2xl p-4 sm:p-6 ${theme.page}`}>
       <Link
         to="/explore"
         className={`inline-flex items-center gap-2 text-sm font-semibold transition-colors ${theme.muted} hover:opacity-80`}
@@ -551,10 +551,10 @@ export default function HospitalDetailPage() {
 
           <section className="mt-10">
             <h2 className={`text-lg font-semibold ${theme.title}`}>About</h2>
-            <div className={`mt-4 p-6 ${theme.card}`}>
-              <p className="text-sm leading-relaxed text-body">{hospital.description}</p>
+            <div className={`mt-4 grid gap-6 p-6 lg:grid-cols-2 lg:gap-10 ${theme.card}`}>
+              <p className="max-w-3xl text-sm leading-relaxed text-body">{hospital.description}</p>
 
-              <dl className="mt-6 grid gap-4 sm:grid-cols-2">
+              <dl className="grid gap-4 sm:grid-cols-2 lg:grid-cols-1">
                 <div>
                   <dt className="text-xs font-semibold uppercase tracking-wide text-mist">
                     Address
@@ -577,7 +577,7 @@ export default function HospitalDetailPage() {
             <h2 className={`text-lg font-semibold ${theme.title}`}>Patient reviews</h2>
 
             {hospital.reviews?.length ? (
-              <ul className="mt-4 space-y-4">
+              <ul className="mt-4 grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
                 {hospital.reviews.map((review) => (
                   <li key={`${review.author}-${review.text}`} className={`p-6 ${theme.card}`}>
                     <div className="flex items-center justify-between gap-4">

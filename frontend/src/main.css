@@ -85,6 +85,58 @@
   }
 }
 
+/* ---------- Shared page container ----------
+   One horizontal rhythm for the whole public site: every navbar row, hero,
+   section and footer band lines up on the same left/right edge. */
+
+@layer components {
+  .page-container {
+    width: 100%;
+    max-width: 96rem;
+    margin-inline: auto;
+    padding-inline: 1rem;
+  }
+
+  @media (min-width: 640px) {
+    .page-container {
+      padding-inline: 1.5rem;
+    }
+  }
+
+  @media (min-width: 1024px) {
+    .page-container {
+      padding-inline: 2rem;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    .page-container {
+      padding-inline: 2.5rem;
+    }
+  }
+
+  @media (min-width: 1600px) {
+    .page-container {
+      padding-inline: 3rem;
+    }
+  }
+}
+
+/* ---------- Scrollbar-free scroll regions ---------- */
+
+@layer components {
+  .scrollbar-none {
+    scrollbar-width: none; /* Firefox */
+    -ms-overflow-style: none; /* legacy Edge / IE */
+  }
+
+  .scrollbar-none::-webkit-scrollbar {
+    display: none; /* Chrome, Edge, Safari */
+    width: 0;
+    height: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   *,
   *::before,

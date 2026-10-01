@@ -1,5 +1,7 @@
 import { useRef } from 'react'
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
+import { ArrowRight } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { SCROLL_SPRING } from '../../lib/motion'
 import { Reveal, RevealGroup, RevealItem } from './Reveal'
 
@@ -41,7 +43,7 @@ export default function HowItWorks() {
         }}
       />
 
-      <div className="relative mx-auto max-w-6xl px-6">
+      <div className="relative page-container">
         <Reveal className="max-w-2xl">
           <p className="text-xs font-bold tracking-widest text-brand-700 uppercase">
             How it works
@@ -70,6 +72,16 @@ export default function HowItWorks() {
             ))}
           </RevealGroup>
         </div>
+
+        <Reveal delay={0.1} className="mt-10">
+          <Link
+            to="/how-it-works"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-800"
+          >
+            See the full journey, step by step
+            <ArrowRight size={14} strokeWidth={2.5} />
+          </Link>
+        </Reveal>
       </div>
     </section>
   )

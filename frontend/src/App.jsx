@@ -4,6 +4,7 @@ import AuthProvider from './context/AuthProvider'
 import GuestOnly from './components/GuestOnly'
 import RequireRole from './components/RequireRole'
 import LandingPage from './pages/LandingPage'
+import AboutPage from './pages/AboutPage'
 import ExplorePage from './pages/ExplorePage'
 import HospitalDetailPage from './pages/HospitalDetailPage'
 import SignInPage from './pages/SignInPage'
@@ -13,6 +14,10 @@ import VerifyEmailPage from './pages/VerifyEmailPage'
 import HospitalSignInPage from './pages/HospitalSignInPage'
 import HospitalApplyPage from './pages/HospitalApplyPage'
 import HospitalPendingPage from './pages/HospitalPendingPage'
+import ContactPage from './pages/ContactPage'
+import FeaturesPage from './pages/FeaturesPage'
+import HowItWorksPage from './pages/HowItWorksPage'
+import ForHospitalsPage from './pages/ForHospitalsPage'
 import HospitalLayout from './pages/hospital/HospitalLayout'
 import HospitalOverviewPage from './pages/hospital/HospitalOverviewPage'
 import HospitalProfilePage from './pages/hospital/HospitalProfilePage'
@@ -69,6 +74,46 @@ function App() {
               element={
                 <GuestOnly>
                   <LandingPage />
+                </GuestOnly>
+              }
+            />
+            <Route
+              path="/about"
+              element={
+                <GuestOnly>
+                  <AboutPage />
+                </GuestOnly>
+              }
+            />
+            <Route
+              path="/contact"
+              element={
+                <GuestOnly>
+                  <ContactPage />
+                </GuestOnly>
+              }
+            />
+            <Route
+              path="/features"
+              element={
+                <GuestOnly>
+                  <FeaturesPage />
+                </GuestOnly>
+              }
+            />
+            <Route
+              path="/how-it-works"
+              element={
+                <GuestOnly>
+                  <HowItWorksPage />
+                </GuestOnly>
+              }
+            />
+            <Route
+              path="/for-hospitals"
+              element={
+                <GuestOnly>
+                  <ForHospitalsPage />
                 </GuestOnly>
               }
             />

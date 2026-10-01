@@ -4,6 +4,7 @@ const STYLES = {
   verified: 'bg-brand-50 text-brand-800',
   confirmed: 'bg-brand-50 text-brand-800',
   completed: 'bg-brand-50 text-brand-800',
+  arrived: 'bg-brand-50 text-brand-800',
   pending: 'bg-surface text-body',
   requested: 'bg-surface text-body',
   collected: 'bg-surface text-body',

@@ -2,7 +2,7 @@ import { useEffect, useState } from 'react'
 import { Link, NavLink, useLocation } from 'react-router-dom'
 import { LogOut, Menu, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
 
-function NavRow({ item, collapsed, indent = false, onClose }) {
+function NavRow({ item, collapsed, indent = false, onClose, admin = false }) {
   return (
     <NavLink
       to={item.to}
@@ -10,41 +10,54 @@ function NavRow({ item, collapsed, indent = false, onClose }) {
       onClick={onClose}
       title={collapsed ? item.label : undefined}
       className={({ isActive }) =>
-        `flex items-center gap-3 rounded-lg py-2.5 pr-3 text-sm font-semibold transition-[background-color,color,padding] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset ${
-          indent ? 'pl-9' : 'pl-3'
-        } ${collapsed ? 'lg:pl-[31px]' : ''} ${
+        `relative flex items-center gap-3 rounded-lg py-2.5 pr-3 text-sm font-semibold transition-[background-color,color,padding] duration-300 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset ${
+          admin ? (indent ? 'pl-8' : 'pl-2') : indent ? 'pl-9' : 'pl-3'
+        } ${collapsed ? (admin ? 'lg:pl-[23px]' : 'lg:pl-[31px]') : ''} ${
           isActive ? 'bg-brand-50 text-brand-800' : 'text-body hover:bg-surface hover:text-ink'
         }`
       }
     >
-      <span className="relative shrink-0">
-        <item.icon size={18} />
-        {item.badge > 0 ? (
+      {({ isActive }) => (
+        <>
+          {admin && isActive ? (
+            <span
+              aria-hidden="true"
+              className={`absolute top-1/2 left-0 h-5 w-[3px] -translate-y-1/2 rounded-full bg-brand-600 transition-opacity duration-200 ${
+                collapsed ? 'lg:opacity-0' : 'opacity-100'
+              }`}
+            />
+          ) : null}
+
+          <span className="relative shrink-0">
+            <item.icon size={18} />
+            {item.badge > 0 ? (
+              <span
+                className={`absolute -right-1 -top-1 h-2 w-2 rounded-full bg-brand-600 transition-opacity duration-200 ${
+                  collapsed ? 'lg:opacity-100' : 'lg:opacity-0'
+                }`}
+              />
+            ) : null}
+          </span>
+
           <span
-            className={`absolute -right-1 -top-1 h-2 w-2 rounded-full bg-brand-600 transition-opacity duration-200 ${
-              collapsed ? 'lg:opacity-100' : 'lg:opacity-0'
+            className={`flex-1 whitespace-nowrap transition-opacity duration-200 ${
+              collapsed ? 'lg:opacity-0' : 'opacity-100'
             }`}
-          />
-        ) : null}
-      </span>
+          >
+            {item.label}
+          </span>
 
-      <span
-        className={`flex-1 whitespace-nowrap transition-opacity duration-200 ${
-          collapsed ? 'lg:opacity-0' : 'opacity-100'
-        }`}
-      >
-        {item.label}
-      </span>
-
-      {item.badge > 0 ? (
-        <span
-          className={`rounded-full bg-brand-700 px-2 py-0.5 text-xs font-bold text-white transition-opacity duration-200 ${
-            collapsed ? 'lg:opacity-0' : 'opacity-100'
-          }`}
-        >
-          {item.badge}
-        </span>
-      ) : null}
+          {item.badge > 0 ? (
+            <span
+              className={`rounded-full bg-brand-700 px-2 py-0.5 text-xs font-bold text-white transition-opacity duration-200 ${
+                collapsed ? 'lg:opacity-0' : 'opacity-100'
+              }`}
+            >
+              {item.badge}
+            </span>
+          ) : null}
+        </>
+      )}
     </NavLink>
   )
 }
@@ -56,8 +69,10 @@ export default function DashboardShell({
   userEmail,
   onSignout,
   topbarExtra = null,
+  variant = 'default',
   children,
 }) {
+  const admin = variant === 'admin'
   const location = useLocation()
   const [drawerOpen, setDrawerOpen] = useState(false)
   const [collapsed, setCollapsed] = useState(
@@ -87,6 +102,7 @@ export default function DashboardShell({
   const activeItem = entries.find((entry) =>
     entry.end ? location.pathname === entry.to : location.pathname.startsWith(entry.to),
   )
+  const ActiveIcon = admin ? activeItem?.icon : null
 
   const close = () => setDrawerOpen(false)
 
@@ -106,7 +122,11 @@ export default function DashboardShell({
         } ${collapsed ? 'lg:w-20' : 'lg:w-64'}`}
       >
         <div className="flex h-full w-64 flex-col">
-          <div className="relative flex h-16 shrink-0 items-center border-b border-line px-3">
+          <div
+            className={`relative flex h-16 shrink-0 items-center border-b border-line ${
+              admin ? 'px-4' : 'px-3'
+            }`}
+          >
             <span
               className={`flex items-center gap-2 transition-opacity duration-200 ${
                 collapsed ? 'lg:pointer-events-none lg:opacity-0' : 'opacity-100'
@@ -115,29 +135,33 @@ export default function DashboardShell({
               <Link to={entries[0]?.to ?? '/'} className="flex items-center">
                 <img src="/Aurora.png" alt="Aurora" className="h-8 w-auto" />
               </Link>
-              <span className="rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800">
+              <span
+                className={`rounded-full bg-brand-50 px-2.5 py-1 text-xs font-semibold text-brand-800 ${
+                  admin ? 'border border-brand-200' : ''
+                }`}
+              >
                 {brandChip}
               </span>
             </span>
 
             <span
               aria-hidden="true"
-              className={`absolute left-3 grid h-9 w-9 place-items-center rounded-xl bg-brand-950 text-sm font-extrabold text-brand-300 transition-opacity duration-200 ${
-                collapsed ? 'lg:opacity-100' : 'lg:opacity-0'
-              }`}
+              className={`absolute grid h-9 w-9 place-items-center rounded-xl bg-brand-950 text-sm font-extrabold text-brand-300 transition-opacity duration-200 ${
+                admin ? 'hidden lg:grid lg:left-[22px]' : 'left-3'
+              } ${collapsed ? 'lg:opacity-100' : 'lg:opacity-0'}`}
             >
               A
             </span>
           </div>
 
-          <nav className="flex-1 overflow-y-auto p-3">
+          <nav className={`flex-1 overflow-y-auto ${admin ? 'px-2 py-2' : 'p-3'}`}>
             {nav.map((entry, index) =>
               entry.items ? (
                 <div key={entry.label} className={index === 0 ? '' : 'mt-4'}>
                   <p
-                    className={`flex items-center gap-2 px-3 pb-2 text-xs font-bold uppercase tracking-widest text-mist transition-opacity duration-200 ${
-                      collapsed ? 'lg:opacity-0' : 'opacity-100'
-                    }`}
+                    className={`flex items-center gap-2 pb-2 text-xs font-bold uppercase tracking-widest text-mist transition-opacity duration-200 ${
+                      admin ? 'px-2' : 'px-3'
+                    } ${collapsed ? 'lg:opacity-0' : 'opacity-100'}`}
                   >
                     <entry.icon size={14} />
                     <span className="whitespace-nowrap">{entry.label}</span>
@@ -150,6 +174,7 @@ export default function DashboardShell({
                         item={child}
                         collapsed={collapsed}
                         indent
+                        admin={admin}
                         onClose={close}
                       />
                     ))}
@@ -160,38 +185,84 @@ export default function DashboardShell({
                   key={entry.to}
                   item={entry}
                   collapsed={collapsed}
+                  admin={admin}
                   onClose={close}
                 />
               ),
             )}
           </nav>
 
-          <div className="shrink-0 border-t border-line p-3">
-            <p
-              className={`mb-1 truncate px-3 text-xs text-mist transition-opacity duration-200 ${
-                collapsed ? 'lg:opacity-0' : 'opacity-100'
-              }`}
-            >
-              {userEmail}
-            </p>
-            <button
-              type="button"
-              onClick={onSignout}
-              title={collapsed ? 'Sign out' : undefined}
-              className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-body transition-[background-color,color,padding] duration-300 hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset ${
-                collapsed ? 'lg:pl-[31px]' : ''
-              }`}
-            >
-              <LogOut size={18} className="shrink-0" />
-              <span
-                className={`whitespace-nowrap transition-opacity duration-200 ${
+          {admin ? (
+            <div className="shrink-0 border-t border-line px-2 pt-3 pb-2">
+              <div
+                className={`flex items-center gap-3 rounded-lg px-2 py-2 transition-[padding] duration-300 ${
+                  collapsed ? 'lg:pl-[14px]' : ''
+                }`}
+              >
+                <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full border border-brand-200 bg-brand-50 text-xs font-extrabold text-brand-800">
+                  {userEmail?.charAt(0)?.toUpperCase() || 'A'}
+                </span>
+                <span
+                  className={`min-w-0 flex-1 transition-opacity duration-200 ${
+                    collapsed ? 'lg:opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  <span
+                    title={userEmail}
+                    className="block truncate text-xs font-semibold text-ink"
+                  >
+                    {userEmail}
+                  </span>
+                  <span className="block text-xs text-mist">{brandChip} account</span>
+                </span>
+              </div>
+
+              <button
+                type="button"
+                onClick={onSignout}
+                title={collapsed ? 'Sign out' : undefined}
+                className={`flex w-full items-center gap-3 rounded-lg py-2.5 pr-3 pl-2 text-sm font-semibold text-body transition-[background-color,color,padding] duration-300 hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset ${
+                  collapsed ? 'lg:pl-[23px]' : ''
+                }`}
+              >
+                <LogOut size={18} className="shrink-0" />
+                <span
+                  className={`whitespace-nowrap transition-opacity duration-200 ${
+                    collapsed ? 'lg:opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  Sign out
+                </span>
+              </button>
+            </div>
+          ) : (
+            <div className="shrink-0 border-t border-line p-3">
+              <p
+                className={`mb-1 truncate px-3 text-xs text-mist transition-opacity duration-200 ${
                   collapsed ? 'lg:opacity-0' : 'opacity-100'
                 }`}
               >
-                Sign out
-              </span>
-            </button>
-          </div>
+                {userEmail}
+              </p>
+              <button
+                type="button"
+                onClick={onSignout}
+                title={collapsed ? 'Sign out' : undefined}
+                className={`flex w-full items-center gap-3 rounded-lg px-3 py-2.5 text-sm font-semibold text-body transition-[background-color,color,padding] duration-300 hover:bg-surface hover:text-ink focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-inset ${
+                  collapsed ? 'lg:pl-[31px]' : ''
+                }`}
+              >
+                <LogOut size={18} className="shrink-0" />
+                <span
+                  className={`whitespace-nowrap transition-opacity duration-200 ${
+                    collapsed ? 'lg:opacity-0' : 'opacity-100'
+                  }`}
+                >
+                  Sign out
+                </span>
+              </button>
+            </div>
+          )}
         </div>
       </aside>
 
@@ -201,7 +272,7 @@ export default function DashboardShell({
         } lg:transition-[padding] lg:duration-300 lg:ease-[cubic-bezier(0.23,1,0.32,1)]`}
       >
         <header className="sticky top-0 z-20 flex h-16 items-center justify-between gap-4 border-b border-line bg-white/80 px-4 backdrop-blur-xl print:hidden sm:px-6">
-          <div className="flex items-center gap-3">
+          <div className="flex min-w-0 items-center gap-3">
             <button
               type="button"
               onClick={() => setDrawerOpen(true)}
@@ -221,12 +292,25 @@ export default function DashboardShell({
               {collapsed ? <PanelLeftOpen size={18} /> : <PanelLeftClose size={18} />}
             </button>
 
-            <span className="text-sm font-semibold text-ink">{activeItem?.label ?? brandChip}</span>
+            {ActiveIcon ? (
+              <span className="grid h-8 w-8 shrink-0 place-items-center rounded-lg bg-brand-50 text-brand-700">
+                <ActiveIcon size={16} />
+              </span>
+            ) : null}
+
+            <span className="truncate text-sm font-semibold text-ink">
+              {activeItem?.label ?? brandChip}
+            </span>
           </div>
 
-          <div className="flex items-center gap-4">
+          <div className="flex shrink-0 items-center gap-4">
             {topbarExtra}
-            <span className="hidden text-sm text-mist sm:block">{userEmail}</span>
+            <span
+              title={userEmail}
+              className="hidden max-w-[200px] truncate text-sm text-mist sm:block lg:max-w-xs"
+            >
+              {userEmail}
+            </span>
           </div>
         </header>
 
