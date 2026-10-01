@@ -1,6 +1,7 @@
 import { useRef } from 'react'
 import { motion, useReducedMotion, useScroll, useSpring, useTransform } from 'framer-motion'
-import { CalendarCheck, FileText, Pill, Receipt, Search, Star } from 'lucide-react'
+import { ArrowRight, CalendarCheck, FileText, Pill } from 'lucide-react'
+import { Link } from 'react-router-dom'
 import { SCROLL_SPRING } from '../../lib/motion'
 import { Reveal, RevealGroup, RevealItem } from './Reveal'
 
@@ -19,21 +20,6 @@ const FEATURES = [
     icon: Pill,
     title: 'Prescriptions',
     copy: 'Issue and review medication orders without the paper chase.',
-  },
-  {
-    icon: Receipt,
-    title: 'Billing',
-    copy: 'Clear invoices and payment status, with nothing lost in spreadsheets.',
-  },
-  {
-    icon: Search,
-    title: 'Hospital directory',
-    copy: 'Search verified hospitals by specialty, area, and city.',
-  },
-  {
-    icon: Star,
-    title: 'Reviews',
-    copy: 'Ratings and reviews from real visits, before patients book.',
   },
 ]
 
@@ -59,7 +45,7 @@ export default function Features() {
         }}
       />
 
-      <div className="relative mx-auto max-w-6xl px-6">
+      <div className="relative page-container">
         <Reveal className="max-w-2xl">
           <p className="text-xs font-bold tracking-widest text-brand-700 uppercase">Features</p>
           <h2 className="mt-3 text-3xl font-extrabold tracking-[-0.02em] text-ink md:text-4xl">
@@ -84,6 +70,16 @@ export default function Features() {
             </RevealItem>
           ))}
         </RevealGroup>
+
+        <Reveal delay={0.1} className="mt-10">
+          <Link
+            to="/features"
+            className="inline-flex items-center gap-2 text-sm font-semibold text-brand-700 transition-colors hover:text-brand-800"
+          >
+            See all features
+            <ArrowRight size={14} strokeWidth={2.5} />
+          </Link>
+        </Reveal>
       </div>
     </section>
   )

@@ -1,10 +1,19 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Ambulance, Loader2, MapPin, Navigation, PhoneCall, Radio, ShieldAlert, Siren } from 'lucide-react'
+import {
+  Activity,
+  Ambulance,
+  Clock,
+  Loader2,
+  MapPin,
+  Navigation,
+  PhoneCall,
+  Radio,
+  ShieldAlert,
+  Siren,
+} from 'lucide-react'
 import StatusChip from '../../components/StatusChip'
+import { TextField } from '../../components/FormFields'
 import { api } from '../../lib/api'
-
-const FIELD_CLASS =
-  'h-11 w-full rounded-lg border border-line bg-white px-3 text-sm text-ink outline-none transition-colors placeholder:text-mist focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30'
 
 const LADDER = ['raised', 'acknowledged', 'dispatched', 'en_route', 'on_scene', 'transporting', 'arrived', 'completed']
 const LADDER_LABELS = {
@@ -47,7 +56,11 @@ function useGeolocation() {
 
 function TrailPlot({ trail = [] }) {
   if (trail.length < 2) {
-    return <p className="rounded-xl bg-surface px-4 py-6 text-center text-xs text-mist">Waiting for the first position…</p>
+    return (
+      <div className="flex h-[150px] w-full items-center justify-center rounded-lg bg-white px-4 text-center text-xs text-mist">
+        Waiting for the first position…
+      </div>
+    )
   }
 
   const lats = trail.map((point) => point.lat)
@@ -210,42 +223,80 @@ export default function PatientEmergencyPage() {
   }
 
   return (
-    <>
-      <header>
-        <p className="text-xs font-bold uppercase tracking-widest text-danger">Emergency</p>
-        <h1 className="mt-2 flex items-center gap-3 text-3xl font-extrabold tracking-tight text-ink">
-          <Siren size={26} className="text-danger" />
-          SOS &amp; ambulance
-        </h1>
-        <p className="mt-2 max-w-2xl text-sm leading-relaxed text-mist">
-          One tap alerts the nearest hospital with your location and tells your emergency contact.
-          Your family can follow the ambulance live from this screen.
-        </p>
-      </header>
-
-      {error ? <p className="mt-6 text-sm font-medium text-danger">{error}</p> : null}
-      {notice ? <p className="mt-6 text-sm font-medium text-brand-800">{notice}</p> : null}
-
-      {active ? (
-        <section className="mt-8 rounded-2xl border border-danger/40 bg-danger/5 p-6">
-          <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-ink">
-              <Radio size={18} className="text-danger" />
-              Live — {active.kind === 'sos' ? 'SOS' : 'ambulance request'}
-            </h2>
-            <StatusChip status={active.status} label={LADDER_LABELS[active.status] ?? active.status} />
+    <div className="space-y-6">
+      <section className="rounded-2xl border border-line bg-surface px-5 py-5 md:px-6">
+        <div className="flex flex-wrap items-start justify-between gap-4">
+          <div className="min-w-0">
+            <p className="text-xs font-bold tracking-widest text-danger uppercase">Emergency</p>
+            <h1 className="mt-2 flex items-center gap-2.5 text-2xl font-extrabold tracking-tight text-ink">
+              <span className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-danger-bg text-danger">
+                <Siren size={18} />
+              </span>
+              SOS &amp; ambulance
+            </h1>
+            <p className="mt-2 max-w-2xl text-sm leading-relaxed text-body">
+              One tap alerts the nearest hospital with your location and tells your emergency contact.
+              Your family can follow the ambulance live from this screen.
+            </p>
           </div>
 
-          <div className="mt-5 grid gap-5 lg:grid-cols-[minmax(0,1fr)_320px]">
-            <div>
-              <ol className="space-y-2">
+          <span
+            className={`inline-flex shrink-0 items-center gap-2 rounded-full border px-3.5 py-2 text-xs font-bold tracking-widest uppercase ${
+              active ? 'border-danger/30 bg-danger-bg text-danger' : 'border-brand-200 bg-brand-50 text-brand-700'
+            }`}
+          >
+            <span className={`h-2 w-2 rounded-full ${active ? 'animate-pulse bg-danger' : 'bg-brand-500'}`} />
+            {active ? 'SOS active' : 'No active request'}
+          </span>
+        </div>
+      </section>
+
+      {error ? (
+        <p className="rounded-xl border border-danger/30 bg-danger-bg px-4 py-3 text-sm font-medium text-danger">
+          {error}
+        </p>
+      ) : null}
+
+      {notice ? (
+        <p className="rounded-xl border border-brand-200 bg-brand-50 px-4 py-3 text-sm font-medium text-brand-800">
+          {notice}
+        </p>
+      ) : null}
+
+      {active ? (
+        <section className="rounded-2xl border border-danger/30 bg-white p-5 shadow-soft md:p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <div className="flex flex-wrap items-center gap-3">
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-ink">
+                <Radio size={18} className="text-danger" />
+                Live — {active.kind === 'sos' ? 'SOS' : 'ambulance request'}
+              </h2>
+              <StatusChip status={active.status} label={LADDER_LABELS[active.status] ?? active.status} />
+            </div>
+
+            <button
+              type="button"
+              onClick={cancel}
+              disabled={busy === 'cancel'}
+              className="inline-flex h-10 w-full items-center justify-center gap-2 rounded-lg border border-line px-5 text-sm font-semibold text-body transition-colors hover:border-danger hover:text-danger focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-brand-600 focus-visible:ring-offset-2 disabled:opacity-60 sm:w-auto"
+            >
+              {busy === 'cancel' ? <Loader2 size={14} className="animate-spin" /> : null}
+              Cancel request
+            </button>
+          </div>
+
+          <div className="mt-5 grid gap-5 lg:grid-cols-2">
+            <div className="flex flex-col">
+              <ol className="relative space-y-3">
+                <span aria-hidden="true" className="absolute top-2 bottom-2 left-[5px] w-px bg-line" />
+
                 {LADDER.map((step) => {
                   const reached = live?.ladder?.find((entry) => entry.step === step)?.reached ?? false
 
                   return (
-                    <li key={step} className="flex items-center gap-3">
+                    <li key={step} className="relative flex items-center gap-3">
                       <span
-                        className={`h-2.5 w-2.5 shrink-0 rounded-full ${
+                        className={`h-2.5 w-2.5 shrink-0 rounded-full ring-4 ring-white ${
                           reached ? 'bg-brand-600' : 'bg-line'
                         }`}
                       />
@@ -257,115 +308,132 @@ export default function PatientEmergencyPage() {
                 })}
               </ol>
 
-              <div className="mt-5 flex flex-wrap gap-6 rounded-xl border border-line bg-white px-4 py-3">
-                <span className="text-sm">
-                  <span className="block text-xs uppercase tracking-wide text-mist">ETA</span>
-                  <span className="font-semibold text-ink">{live?.etaMinutes ?? '—'} min</span>
-                </span>
-                <span className="text-sm">
-                  <span className="block text-xs uppercase tracking-wide text-mist">Distance</span>
-                  <span className="font-semibold text-ink">{live?.distanceKm ?? '—'} km</span>
-                </span>
-                <span className="text-sm">
-                  <span className="block text-xs uppercase tracking-wide text-mist">Ambulance</span>
-                  <span className="font-semibold text-ink">{live?.ambulance?.callSign ?? 'not assigned'}</span>
-                </span>
-              </div>
+              <dl className="mt-5 grid grid-cols-3 divide-x divide-line rounded-xl border border-line">
+                <div className="min-w-0 px-3 py-3 sm:px-4">
+                  <dt className="text-[11px] font-semibold tracking-wide text-mist uppercase">ETA</dt>
+                  <dd className="mt-0.5 truncate text-sm font-semibold text-ink">
+                    {live?.etaMinutes ?? '—'} min
+                  </dd>
+                </div>
+                <div className="min-w-0 px-3 py-3 sm:px-4">
+                  <dt className="text-[11px] font-semibold tracking-wide text-mist uppercase">Distance</dt>
+                  <dd className="mt-0.5 truncate text-sm font-semibold text-ink">
+                    {live?.distanceKm ?? '—'} km
+                  </dd>
+                </div>
+                <div className="min-w-0 px-3 py-3 sm:px-4">
+                  <dt className="text-[11px] font-semibold tracking-wide text-mist uppercase">Ambulance</dt>
+                  <dd className="mt-0.5 truncate text-sm font-semibold text-ink">
+                    {live?.ambulance?.callSign ?? 'not assigned'}
+                  </dd>
+                </div>
+              </dl>
 
               {live?.ambulance?.driverName ? (
                 <p className="mt-3 flex items-center gap-2 text-sm text-body">
-                  <PhoneCall size={14} className="text-brand-700" />
-                  {live.ambulance.driverName}
-                  {live.ambulance.driverPhone ? ` · ${live.ambulance.driverPhone}` : ''}
+                  <PhoneCall size={14} className="shrink-0 text-brand-700" />
+                  <span className="truncate">
+                    {live.ambulance.driverName}
+                    {live.ambulance.driverPhone ? ` · ${live.ambulance.driverPhone}` : ''}
+                  </span>
                 </p>
               ) : null}
             </div>
 
-            <div className="rounded-xl border border-line bg-white p-4">
-              <p className="flex items-center gap-2 text-xs font-semibold uppercase tracking-wide text-mist">
+            <div className="flex flex-col rounded-xl border border-line bg-surface p-4">
+              <p className="flex items-center gap-2 text-xs font-semibold tracking-wide text-mist uppercase">
                 <Navigation size={13} />
                 Route so far
               </p>
-              <TrailPlot trail={live?.trail ?? []} />
-              <p className="mt-2 text-center text-[11px] text-mist">
-                <span className="inline-block h-2 w-2 rounded-full bg-brand-700" /> you ·{' '}
-                <span className="inline-block h-2 w-2 rounded-full bg-danger" /> ambulance
+
+              <div className="mt-3 flex flex-1 items-center">
+                <TrailPlot trail={live?.trail ?? []} />
+              </div>
+
+              <p className="mt-3 flex items-center justify-center gap-4 text-[11px] text-mist">
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-brand-700" /> you
+                </span>
+                <span className="inline-flex items-center gap-1.5">
+                  <span className="h-2 w-2 rounded-full bg-danger" /> ambulance
+                </span>
               </p>
             </div>
           </div>
-
-          <button
-            type="button"
-            onClick={cancel}
-            disabled={busy === 'cancel'}
-            className="mt-5 inline-flex h-10 items-center gap-2 rounded-lg border border-line px-5 text-sm font-semibold text-body transition-colors hover:border-danger hover:text-danger disabled:opacity-60"
-          >
-            {busy === 'cancel' ? <Loader2 size={14} className="animate-spin" /> : null}
-            Cancel request
-          </button>
         </section>
       ) : null}
 
-      <section className="mt-8 grid gap-6 lg:grid-cols-[380px_minmax(0,1fr)]">
+      <div className="grid gap-6 lg:grid-cols-[minmax(0,2fr)_minmax(0,3fr)]">
         <div className="space-y-5">
           <button
             type="button"
             onClick={() => raise('sos')}
             disabled={busy !== ''}
-            className="flex w-full flex-col items-center gap-2 rounded-2xl bg-danger px-6 py-8 text-white shadow-lg shadow-danger/30 transition duration-300 hover:-translate-y-0.5 focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:opacity-70"
+            className="btn-shine flex w-full items-center justify-center gap-3 rounded-2xl bg-danger px-6 py-5 text-white shadow-lg shadow-danger/25 transition duration-300 hover:-translate-y-0.5 hover:bg-danger/90 active:scale-[0.99] focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-danger focus-visible:ring-offset-2 disabled:translate-y-0 disabled:opacity-60"
           >
-            {busy === 'sos' ? <Loader2 size={30} className="animate-spin" /> : <ShieldAlert size={34} />}
-            <span className="text-xl font-extrabold tracking-tight">SOS</span>
-            <span className="text-xs font-semibold uppercase tracking-widest">
-              Alert the nearest hospital now
+            <span className="grid h-11 w-11 shrink-0 place-items-center rounded-full bg-white/15">
+              {busy === 'sos' ? <Loader2 size={22} className="animate-spin" /> : <ShieldAlert size={22} />}
+            </span>
+            <span className="flex flex-col items-start leading-tight">
+              <span className="text-xl font-extrabold tracking-tight">SOS</span>
+              <span className="text-[11px] font-semibold tracking-widest uppercase">
+                Alert the nearest hospital now
+              </span>
             </span>
           </button>
 
-          <div className="rounded-2xl border border-line bg-white p-6 shadow-soft">
+          <div className="rounded-2xl border border-line bg-white p-5 shadow-soft md:p-6">
             <h2 className="flex items-center gap-2 text-lg font-semibold text-ink">
               <Ambulance size={18} className="text-brand-700" />
               Request an ambulance
             </h2>
-            <p className="mt-1 text-xs text-mist">
+            <p className="mt-1 text-xs leading-relaxed text-mist">
               For yourself or a relative — the hospital needs to know where to come.
             </p>
 
-            <div className="mt-4 space-y-3">
-              <input
+            <div className="mt-5 space-y-4">
+              <TextField
+                id="emergency-pickup"
+                label="Pickup point"
+                placeholder="House, street, landmark"
+                hint="The clearer this is, the faster the crew finds you."
                 value={form.label}
                 onChange={(event) => setForm({ ...form, label: event.target.value })}
-                placeholder="Pickup point (house, street, landmark)"
-                className={FIELD_CLASS}
-                aria-label="Pickup point"
               />
-              <input
+
+              <TextField
+                id="emergency-reason"
+                label="What is happening?"
+                placeholder="e.g. chest pain, cannot breathe"
                 value={form.reason}
                 onChange={(event) => setForm({ ...form, reason: event.target.value })}
-                placeholder="What is happening? (e.g. chest pain, cannot breathe)"
-                className={FIELD_CLASS}
-                aria-label="Reason"
               />
-              <input
+
+              <TextField
+                id="emergency-phone"
+                label="Phone number to call back"
+                placeholder="0300 0000000"
                 value={form.patientPhone}
                 onChange={(event) => setForm({ ...form, patientPhone: event.target.value })}
-                placeholder="Phone number to call back"
-                className={FIELD_CLASS}
-                aria-label="Patient phone"
               />
-              <input
-                value={form.relativeName}
-                onChange={(event) => setForm({ ...form, relativeName: event.target.value })}
-                placeholder="Relative raising this (optional)"
-                className={FIELD_CLASS}
-                aria-label="Relative name"
-              />
-              <input
-                value={form.relativePhone}
-                onChange={(event) => setForm({ ...form, relativePhone: event.target.value })}
-                placeholder="Relative's phone (gets updates)"
-                className={FIELD_CLASS}
-                aria-label="Relative phone"
-              />
+
+              <div className="grid gap-4 sm:grid-cols-2">
+                <TextField
+                  id="emergency-relative-name"
+                  label="Relative raising this"
+                  placeholder="Optional"
+                  value={form.relativeName}
+                  onChange={(event) => setForm({ ...form, relativeName: event.target.value })}
+                />
+
+                <TextField
+                  id="emergency-relative-phone"
+                  label="Relative's phone"
+                  placeholder="Gets the updates"
+                  value={form.relativePhone}
+                  onChange={(event) => setForm({ ...form, relativePhone: event.target.value })}
+                />
+              </div>
 
               <button
                 type="button"
@@ -385,42 +453,60 @@ export default function PatientEmergencyPage() {
           </div>
         </div>
 
-        <section className="rounded-2xl border border-line bg-white p-6 shadow-soft">
+        <section className="h-fit rounded-2xl border border-line bg-white p-5 shadow-soft md:p-6">
           <h2 className="text-lg font-semibold text-ink">Your emergency history</h2>
 
           {state === 'loading' ? (
             <p className="mt-4 text-sm text-mist">Loading…</p>
           ) : requests.length ? (
-            <ul className="mt-4 divide-y divide-line">
+            <ul className="mt-2 divide-y divide-line">
               {requests.map((entry) => (
-                <li key={entry.id ?? entry._id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-                  <div className="min-w-0">
-                    <p className="text-sm font-semibold text-ink">
-                      {entry.kind === 'sos' ? 'SOS' : 'Ambulance'} · {entry.hospital?.name ?? 'Hospital'}
+                <li key={entry.id ?? entry._id} className="py-4">
+                  <div className="flex flex-wrap items-center justify-between gap-2">
+                    <p className="flex min-w-0 items-center gap-2.5 text-sm font-semibold text-ink">
+                      <span className="grid h-7 w-7 shrink-0 place-items-center rounded-full bg-surface text-brand-700">
+                        {entry.kind === 'sos' ? <Siren size={14} /> : <Ambulance size={14} />}
+                      </span>
+                      <span className="truncate">{entry.hospital?.name ?? 'Hospital'}</span>
                     </p>
-                    <p className="mt-0.5 truncate text-xs text-mist">
-                      {new Date(entry.createdAt).toLocaleString()}
-                      {entry.pickup?.label ? ` · ${entry.pickup.label}` : ''}
-                      {entry.reason ? ` · ${entry.reason}` : ''}
-                    </p>
+                    <StatusChip status={entry.status} label={LADDER_LABELS[entry.status] ?? entry.status} />
                   </div>
-                  <StatusChip status={entry.status} label={LADDER_LABELS[entry.status] ?? entry.status} />
+
+                  <dl className="mt-2 space-y-1 pl-[38px] text-xs text-mist">
+                    <div className="flex items-start gap-2">
+                      <Clock size={13} className="mt-px shrink-0 text-brand-700" />
+                      <span>
+                        {entry.kind === 'sos' ? 'SOS' : 'Ambulance'} ·{' '}
+                        {new Date(entry.createdAt).toLocaleString()}
+                      </span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <MapPin size={13} className="mt-px shrink-0 text-brand-700" />
+                      <span>{entry.pickup?.label || 'No pickup note'}</span>
+                    </div>
+                    <div className="flex items-start gap-2">
+                      <Activity size={13} className="mt-px shrink-0 text-brand-700" />
+                      <span>{entry.reason || 'No reason given'}</span>
+                    </div>
+                  </dl>
                 </li>
               ))}
             </ul>
           ) : (
-            <p className="mt-4 rounded-xl bg-surface px-4 py-8 text-center text-sm text-mist">
+            <p className="mt-4 rounded-xl bg-surface px-4 py-6 text-center text-sm text-mist">
               Nothing raised yet. The SOS button is always here.
             </p>
           )}
 
-          <p className="mt-4 flex items-start gap-2 rounded-xl bg-surface px-4 py-3 text-xs leading-relaxed text-body">
-            <MapPin size={13} className="mt-0.5 shrink-0 text-brand-700" />
-            In a life-threatening situation, call your local emergency number as well — Aurora
-            alerts the hospital, but the phone line is faster.
+          <p className="mt-4 flex items-start gap-2.5 rounded-xl border border-line bg-surface px-4 py-3 text-xs leading-relaxed text-body">
+            <ShieldAlert size={14} className="mt-0.5 shrink-0 text-brand-700" />
+            <span>
+              In a life-threatening situation, call your local emergency number as well — Aurora
+              alerts the hospital, but the phone line is faster.
+            </span>
           </p>
         </section>
-      </section>
-    </>
+      </div>
+    </div>
   )
 }

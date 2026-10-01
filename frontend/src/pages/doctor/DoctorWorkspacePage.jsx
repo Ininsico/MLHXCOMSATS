@@ -93,6 +93,25 @@ export default function DoctorWorkspacePage() {
     }
   }
 
+  async function acceptReferral(entry) {
+    const referralId = entry.id ?? entry._id
+
+    setBusy(`accept-${referralId}`)
+    setError('')
+
+    try {
+      await api.doctorCare.setReferral(referralId, 'accepted')
+      await load()
+      setNotice(
+        `Referral accepted for ${entry.patientName || 'the patient'} — it has left the open queue.`,
+      )
+    } catch (err) {
+      setError(err.message || 'Could not accept that referral.')
+    } finally {
+      setBusy('')
+    }
+  }
+
   async function draftNote() {
     if (!selected) return
     setBusy('draft')
@@ -227,6 +246,8 @@ export default function DoctorWorkspacePage() {
   }
 
   const serious = warnings.filter((warning) => warning.severity === 'serious')
+  const activeAppointment =
+    (queue.appointments ?? []).find((entry) => (entry.id ?? entry._id) === selected) ?? null
 
   return (
     <>
@@ -292,10 +313,19 @@ export default function DoctorWorkspacePage() {
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-line bg-white p-6 shadow-soft">
           <div className="flex flex-wrap items-center justify-between gap-3">
-            <h2 className="flex items-center gap-2 text-lg font-semibold text-ink">
-              <FileText size={18} className="text-brand-700" />
-              Consult note
-            </h2>
+            <div>
+              <h2 className="flex items-center gap-2 text-lg font-semibold text-ink">
+                <FileText size={18} className="text-brand-700" />
+                Consult note
+              </h2>
+              <p className="mt-1 text-xs text-mist">
+                {activeAppointment
+                  ? `${activeAppointment.patientName} · ${activeAppointment.time}`
+                  : patient.name
+                    ? `${patient.name} · no visit booked today`
+                    : 'Choose a visit to write a note.'}
+              </p>
+            </div>
             {note.draft ? (
               <span className="rounded-full bg-brand-50 px-3 py-1 text-xs font-bold uppercase tracking-widest text-brand-700">
                 draft — not filed
@@ -504,31 +534,42 @@ export default function DoctorWorkspacePage() {
         </form>
 
         <ul className="mt-5 divide-y divide-line">
-          {referrals.map((entry) => (
-            <li key={entry.id ?? entry._id} className="flex flex-wrap items-center justify-between gap-3 py-3">
-              <div>
-                <p className="text-sm font-semibold text-ink">
-                  {entry.patientName} → {entry.toSpecialty}
-                </p>
-                <p className="mt-0.5 text-xs text-mist">
-                  {entry.fromDoctorName} · {entry.urgency}
-                  {entry.reason ? ` · ${entry.reason}` : ''}
-                </p>
-              </div>
-              <div className="flex items-center gap-2">
-                <StatusChip status={entry.status} />
-                {entry.status === 'open' ? (
-                  <button
-                    type="button"
-                    onClick={() => api.doctorCare.setReferral(entry.id ?? entry._id, 'accepted').then(load)}
-                    className={GHOST_CLASS}
-                  >
-                    Accept
-                  </button>
-                ) : null}
-              </div>
-            </li>
-          ))}
+          {referrals.map((entry) => {
+            const referralId = entry.id ?? entry._id
+
+            return (
+              <li
+                key={referralId}
+                className="flex flex-wrap items-center justify-between gap-3 py-3"
+              >
+                <div>
+                  <p className="text-sm font-semibold text-ink">
+                    {entry.patientName} → {entry.toSpecialty}
+                  </p>
+                  <p className="mt-0.5 text-xs text-mist">
+                    {entry.fromDoctorName} · {entry.urgency}
+                    {entry.reason ? ` · ${entry.reason}` : ''}
+                  </p>
+                </div>
+                <div className="flex items-center gap-2">
+                  <StatusChip status={entry.status} />
+                  {entry.status === 'open' ? (
+                    <button
+                      type="button"
+                      onClick={() => acceptReferral(entry)}
+                      disabled={Boolean(busy)}
+                      className={GHOST_CLASS}
+                    >
+                      {busy === `accept-${referralId}` ? (
+                        <Loader2 size={14} className="animate-spin" />
+                      ) : null}
+                      Accept
+                    </button>
+                  ) : null}
+                </div>
+              </li>
+            )
+          })}
           {!referrals.length ? (
             <li className="py-6 text-center text-sm text-mist">No open referrals.</li>
           ) : null}
