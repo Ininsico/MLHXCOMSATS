@@ -11,6 +11,7 @@ const Appointment = require('../models/appointment')
 const ClinicalNote = require('../models/clinical-note')
 const PatientProfile = require('../models/patient-profile')
 const Prescription = require('../models/prescription')
+const PrevisitForm = require('../models/previsit-form')
 const Referral = require('../models/referral')
 const Staff = require('../models/staff')
 const HttpError = require('../lib/http-error')
@@ -49,6 +50,15 @@ async function ownAppointment(req) {
 
 // ---------------------------------------------------------------- notes
 
+/** What the patient wrote before the visit, shown to the doctor. */
+router.get('/previsit/:appointmentId', async (req, res) => {
+  const form = await PrevisitForm.findOne({
+    appointment: mongoose.isValidObjectId(req.params.appointmentId) ? req.params.appointmentId : null,
+  })
+
+  res.json({ data: form })
+})
+
 router.get('/notes/:appointmentId', async (req, res) => {
   const note = await ClinicalNote.findOne({
     appointment: mongoose.isValidObjectId(req.params.appointmentId) ? req.params.appointmentId : null,
@@ -62,14 +72,23 @@ router.post('/notes/:appointmentId/draft', async (req, res) => {
   const staff = await currentStaff(req)
   const appointment = await ownAppointment(req)
 
-  const [inferences, profile] = await Promise.all([
+  const [inferences, profile, previsit] = await Promise.all([
     AiInferenceLog.find({ patient: appointment.patientName }).sort({ createdAt: -1 }).limit(3),
     appointment.patientUser ? PatientProfile.findOne({ patient: appointment.patientUser }) : null,
+    PrevisitForm.findOne({ appointment: appointment._id }),
   ])
 
   const context = [
     `Visit: ${appointment.date} ${appointment.time} with ${appointment.doctorName || 'the doctor'} (${appointment.specialty || 'general'}).`,
     `Reason given: ${appointment.reason || 'not stated'}.`,
+    previsit?.symptoms
+      ? `What the patient reported before the visit: ${previsit.symptoms}${
+          previsit.duration ? ` (for ${previsit.duration})` : ''
+        }${previsit.painScale !== null && previsit.painScale !== undefined ? `, pain ${previsit.painScale}/10` : ''}.`
+      : '',
+    previsit?.currentMedications ? `Medications the patient listed: ${previsit.currentMedications}.` : '',
+    previsit?.allergies ? `Allergies the patient listed: ${previsit.allergies}.` : '',
+    previsit?.questions ? `The patient wants to ask: ${previsit.questions}.` : '',
     profile?.allergies?.length ? `Allergies: ${profile.allergies.map((entry) => entry.substance).join(', ')}.` : '',
     profile?.medications?.length ? `Current medications: ${profile.medications.join(', ')}.` : '',
     profile?.conditions?.length ? `Long-term conditions: ${profile.conditions.join(', ')}.` : '',

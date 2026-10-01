@@ -1,9 +1,21 @@
 const API_BASE = '/api'
 
+let actingFor = null
+
+/** Act on behalf of a dependent — every later request carries the header. */
+export function setActingFor(dependentId) {
+  actingFor = dependentId || null
+}
+
 async function request(path, { method = 'GET', body } = {}) {
+  const headers = {}
+
+  if (body) headers['Content-Type'] = 'application/json'
+  if (actingFor) headers['x-acting-for'] = actingFor
+
   const response = await fetch(`${API_BASE}${path}`, {
     method,
-    headers: body ? { 'Content-Type': 'application/json' } : undefined,
+    headers: Object.keys(headers).length ? headers : undefined,
     body: body ? JSON.stringify(body) : undefined,
   })
 
@@ -149,6 +161,8 @@ export const api = {
     intake: (query) => request(`/operations/intake${query ? `?${query}` : ''}`),
     addIntake: (body) => request('/operations/intake', { method: 'POST', body }),
     setIntake: (id, body) => request(`/operations/intake/${id}`, { method: 'PATCH', body }),
+    setConsult: (appointmentId, body) =>
+      request(`/operations/appointments/${appointmentId}/consult`, { method: 'PATCH', body }),
   },
 
   doctorCare: {
@@ -161,6 +175,7 @@ export const api = {
     prescriptions: (query) => request(`/doctor/prescriptions${query ? `?${query}` : ''}`),
     refer: (body) => request('/doctor/referrals', { method: 'POST', body }),
     referrals: (query) => request(`/doctor/referrals${query ? `?${query}` : ''}`),
+    previsit: (appointmentId) => request(`/doctor/previsit/${appointmentId}`),
     setReferral: (id, status) => request(`/doctor/referrals/${id}`, { method: 'PATCH', body: { status } }),
   },
 
@@ -189,6 +204,51 @@ export const api = {
     shareReport: (id, body) => request(`/patients/me/lab-orders/${id}/share`, { method: 'POST', body }),
     shares: () => request('/patients/me/shares'),
     revokeShare: (id) => request(`/patients/me/shares/${id}`, { method: 'DELETE' }),
+
+    carePlans: () => request('/patients/me/care-plans'),
+    createCarePlan: (body) => request('/patients/me/care-plans', { method: 'POST', body }),
+    updateCarePlan: (id, body) => request(`/patients/me/care-plans/${id}`, { method: 'PATCH', body }),
+    deleteCarePlan: (id) => request(`/patients/me/care-plans/${id}`, { method: 'DELETE' }),
+
+    dependents: () => request('/patients/me/dependents'),
+    addDependent: (body) => request('/patients/me/dependents', { method: 'POST', body }),
+    removeDependent: (id) => request(`/patients/me/dependents/${id}`, { method: 'DELETE' }),
+
+    vaccinations: () => request('/patients/me/vaccinations'),
+    addVaccination: (body) => request('/patients/me/vaccinations', { method: 'POST', body }),
+    removeVaccination: (id) => request(`/patients/me/vaccinations/${id}`, { method: 'DELETE' }),
+    verifyVaccination: (code) => request(`/patients/public/vaccinations/${code}`),
+
+    previsit: (appointmentId) => request(`/patients/me/appointments/${appointmentId}/previsit`),
+    savePrevisit: (appointmentId, body) =>
+      request(`/patients/me/appointments/${appointmentId}/previsit`, { method: 'POST', body }),
+
+    waitlist: () => request('/patients/me/waitlist'),
+    joinWaitlist: (body) => request('/patients/me/waitlist', { method: 'POST', body }),
+    acceptWaitlistOffer: (id) => request(`/patients/me/waitlist/${id}/accept`, { method: 'POST', body: {} }),
+    leaveWaitlist: (id) => request(`/patients/me/waitlist/${id}`, { method: 'DELETE' }),
+
+    importVitals: (body) => request('/patients/me/vitals/import', { method: 'POST', body }),
+    availability: (hospitalId, query) =>
+      request(`/patients/hospitals/${hospitalId}/availability${query ? `?${query}` : ''}`),
+  },
+
+  payments: {
+    methods: () => request('/payments/methods'),
+    intents: () => request('/payments/intents'),
+    createIntent: (body) => request('/payments/intents', { method: 'POST', body }),
+    checkIntent: (id) => request(`/payments/intents/${id}/check`, { method: 'POST', body: {} }),
+    simulateIntent: (id) => request(`/payments/intents/${id}/simulate`, { method: 'POST', body: {} }),
+    cancelIntent: (id) => request(`/payments/intents/${id}/cancel`, { method: 'POST', body: {} }),
+    received: () => request('/payments/received'),
+    subscription: () => request('/payments/subscription'),
+    subscriptionHistory: () => request('/payments/subscription/history'),
+  },
+
+  waitlist: {
+    list: (query) => request(`/waitlist${query ? `?${query}` : ''}`),
+    offer: (body) => request('/waitlist/offer', { method: 'POST', body }),
+    previsitForms: () => request('/waitlist/previsit'),
   },
 
   aurora: {

@@ -52,3 +52,18 @@ app.include_router(analysis.router)
 app.include_router(chat.router)
 app.include_router(rag.router)
 app.include_router(jobs.router)
+
+
+if __name__ == "__main__":
+    # `python -m app.main` starts the sidecar. Without this block the module only
+    # defines the app and exits — which looked exactly like a silent crash.
+    import os
+
+    import uvicorn
+
+    uvicorn.run(
+        "app.main:app",
+        host=os.environ.get("SIDECAR_HOST", "127.0.0.1"),
+        port=int(os.environ.get("SIDECAR_PORT", "8000")),
+        log_level="info",
+    )

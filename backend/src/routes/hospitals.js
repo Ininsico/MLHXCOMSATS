@@ -298,11 +298,56 @@ router.post('/mine/subscription', requireAuth, requireRole('hospital'), requireH
     ])
   }
 
+  const currentPlanId = req.hospital.subscription?.planId ?? 'starter'
+
+  // Same plan: nothing to do.
+  if (plan.id === currentPlanId) {
+    return res.json({ data: { subscription: req.hospital.subscription ?? {}, plan, changed: false } })
+  }
+
+  /**
+   * A plan cannot be switched on by clicking it. Paid plans require a subscription
+   * request whose Binance payment has been verified and approved by the platform
+   * admin — the admin's approval is what actually activates the plan, so by the time
+   * this is called the hospital already owns it. Free plans may be taken freely.
+   */
+  if (plan.price > 0) {
+    const SubscriptionRequest = require('../models/subscription-request')
+
+    const approved = await SubscriptionRequest.findOne({
+      hospital: req.hospital._id,
+      requestedPlan: plan.id,
+      status: 'approved',
+      'payment.verified': true,
+    })
+
+    const activeAlready = req.hospital.subscription?.planId === plan.id && req.hospital.subscription?.status === 'active'
+
+    if (!approved && !activeAlready) {
+      const pending = await SubscriptionRequest.findOne({
+        hospital: req.hospital._id,
+        requestedPlan: plan.id,
+        status: 'pending',
+      })
+
+      throw new HttpError(
+        402,
+        'PAYMENT_REQUIRED',
+        pending
+          ? `The ${plan.name} plan is waiting on its payment. Send the exact amount shown in Account & subscription and we will activate it as soon as the transfer lands.`
+          : `The ${plan.name} plan needs a payment first. Start the upgrade from your plan card — Aurora will show the exact amount, the Binance destination and the progress.`,
+        [{ field: 'planId', message: 'Payment and approval are required for paid plans.' }],
+      )
+    }
+  }
+
   const startedAt = new Date()
   const renewsAt = new Date(startedAt)
   renewsAt.setDate(renewsAt.getDate() + 30)
 
   const currentTheme = req.hospital.subscription?.themeId
+  const previousPlanId = currentPlanId
+
   req.hospital.subscription = {
     planId: plan.id,
     themeId: plan.themes.includes(currentTheme) ? currentTheme : plan.themes[0],
@@ -312,7 +357,22 @@ router.post('/mine/subscription', requireAuth, requireRole('hospital'), requireH
   }
   await req.hospital.save()
 
-  res.json({ data: { subscription: req.hospital.subscription, plan } })
+  await audit.record(req, {
+    action: 'subscription.plan_changed',
+    subjectType: 'Hospital',
+    subjectId: req.hospital._id,
+    hospital: req.hospital._id,
+    summary: `Plan ${previousPlanId} → ${plan.id}`,
+  })
+
+  res.json({
+    data: {
+      subscription: req.hospital.subscription,
+      plan,
+      changed: true,
+      previousPlanId,
+    },
+  })
 })
 
 router.post('/mine/theme', requireAuth, requireRole('hospital'), requireHospital, async (req, res) => {

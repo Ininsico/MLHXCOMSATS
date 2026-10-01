@@ -36,8 +36,43 @@ function BookingCard({ hospital, doctors, theme }) {
   })
   const [state, setState] = useState('idle')
   const [error, setError] = useState('')
+  const [availability, setAvailability] = useState(null)
 
   const busy = state === 'thinking' || state === 'booking'
+
+  const hospitalId = hospital.id ?? hospital._id
+
+  /**
+   * Load what is actually free for the chosen doctor and date, and keep the selection
+   * inside that set — the picker must never offer a slot that is already booked.
+   */
+  useEffect(() => {
+    let cancelled = false
+
+    api.patients
+      .availability(hospitalId, `doctorId=${manual.doctorId}&date=${manual.date}`)
+      .then((data) => {
+        if (cancelled) return
+        setAvailability(data)
+
+        const free = (data.slots ?? []).filter((slot) => slot.available).map((slot) => slot.time)
+
+        setManual((current) => {
+          if (free.includes(current.time)) return current
+          return { ...current, time: free[0] ?? '' }
+        })
+      })
+      .catch(() => {
+        if (!cancelled) setAvailability(null)
+      })
+
+    return () => {
+      cancelled = true
+    }
+  }, [hospitalId, manual.doctorId, manual.date])
+
+  const freeTimes = (availability?.slots ?? []).filter((slot) => slot.available).map((slot) => slot.time)
+  const takenCount = (availability?.slots ?? []).filter((slot) => slot.taken).length
 
   async function askAurora(event) {
     event.preventDefault()
@@ -249,8 +284,27 @@ function BookingCard({ hospital, doctors, theme }) {
             required
             value={manual.time}
             onChange={(event) => setManual((c) => ({ ...c, time: event.target.value }))}
-            options={SLOT_TIMES}
+            options={
+              freeTimes.length
+                ? freeTimes.map((time) => ({ value: time, label: time }))
+                : [{ value: '', label: availability ? 'no free slots that day' : 'checking…' }]
+            }
+            disabled={!freeTimes.length}
+            hint={
+              availability
+                ? `${availability.free} of ${availability.total} free${
+                    takenCount ? ` · ${takenCount} already booked` : ''
+                  }`
+                : undefined
+            }
           />
+
+          {availability && !freeTimes.length ? (
+            <p className="sm:col-span-2 rounded-xl bg-surface px-4 py-3 text-xs text-body">
+              Every slot with this doctor on {formatSlotDate(manual.date)} is taken or has passed.
+              Pick another date — the list refreshes as soon as you change it.
+            </p>
+          ) : null}
 
           <div className="sm:col-span-2">
             <label htmlFor="reason" className="text-sm font-semibold text-ink">

@@ -563,7 +563,28 @@ router.post('/subscription-request', requireRole('hospital', 'admin'), async (re
 
   await jobs.publish({ type: 'subscription.requested', hospitalId: String(hospital._id), severity: 'low', step: requestedPlan })
 
-  res.status(201).json({ data: request })
+  // Open the Binance payment request immediately, so the hospital portal can show the
+  // instructions and the progress rather than asking anyone to reconcile by hand.
+  let payment = null
+
+  try {
+    const { createSubscriptionIntent } = require('../lib/subscription-intents')
+    const result = await createSubscriptionIntent({ hospital, request })
+
+    payment = {
+      intentId: result.intent.id,
+      reference: result.intent.reference,
+      amount: result.intent.amount,
+      coin: result.intent.coin,
+      payToId: result.intent.payToId,
+      payToEmail: result.intent.payToEmail,
+      instructions: result.instructions,
+    }
+  } catch (error) {
+    console.warn('Could not open the subscription payment request:', error.message)
+  }
+
+  res.status(201).json({ data: request, meta: { payment } })
 })
 
 router.get('/subscription-requests', async (req, res) => {

@@ -25,33 +25,23 @@ const LADDER_ACTIONS = [
   { action: 'completed', label: 'Complete' },
 ]
 
-const PLAN_OPTIONS = [
-  { value: 'starter', label: 'Starter — free' },
-  { value: 'growth', label: 'Growth — Rs 4,900 / month' },
-  { value: 'enterprise', label: 'Enterprise — Rs 14,900 / month' },
-]
-
 export default function HospitalFleetPage() {
   const [fleet, setFleet] = useState([])
   const [requests, setRequests] = useState([])
-  const [planRequests, setPlanRequests] = useState([])
   const [ambulance, setAmbulance] = useState({ callSign: '', vehicleNumber: '', kind: 'basic', driverName: '', driverPhone: '' })
   const [position, setPosition] = useState({ lat: '', lng: '' })
-  const [plan, setPlan] = useState({ requestedPlan: 'growth', requestedTheme: 'emerald', paymentMethod: 'bank_transfer', paymentReference: '', amount: 4900, note: '' })
   const [busy, setBusy] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
 
   const load = useCallback(async () => {
     try {
-      const [fleetData, requestData, planData] = await Promise.all([
+      const [fleetData, requestData] = await Promise.all([
         api.emergency.ambulances(),
         api.emergency.requests('open=true'),
-        api.emergency.planRequests(),
       ])
       setFleet(fleetData ?? [])
       setRequests(requestData ?? [])
-      setPlanRequests(planData ?? [])
     } catch (err) {
       setError(err.message || 'Could not load the fleet.')
     }
@@ -60,16 +50,11 @@ export default function HospitalFleetPage() {
   useEffect(() => {
     let cancelled = false
 
-    Promise.all([
-      api.emergency.ambulances(),
-      api.emergency.requests('open=true'),
-      api.emergency.planRequests(),
-    ])
-      .then(([fleetData, requestData, planData]) => {
+    Promise.all([api.emergency.ambulances(), api.emergency.requests('open=true')])
+      .then(([fleetData, requestData]) => {
         if (cancelled) return
         setFleet(fleetData ?? [])
         setRequests(requestData ?? [])
-        setPlanRequests(planData ?? [])
       })
       .catch((err) => {
         if (!cancelled) setError(err.message || 'Could not load the fleet.')
@@ -149,21 +134,6 @@ export default function HospitalFleetPage() {
       lat: (fromLat + (targetLat - fromLat) * 0.4).toFixed(5),
       lng: (fromLng + (targetLng - fromLng) * 0.4).toFixed(5),
     })
-  }
-
-  async function raisePlan(event) {
-    event.preventDefault()
-    setBusy('plan')
-
-    try {
-      await api.emergency.raisePlanRequest(plan)
-      setNotice('Request sent to the Aurora admin — it activates once the payment is verified.')
-      await load()
-    } catch (err) {
-      setError(err.message || 'Could not send the request.')
-    } finally {
-      setBusy('')
-    }
   }
 
   return (
@@ -415,94 +385,6 @@ export default function HospitalFleetPage() {
           </ul>
         </section>
 
-        <section className="rounded-2xl border border-line bg-white p-6 shadow-soft">
-          <h2 className="text-lg font-semibold text-ink">Plan &amp; billing</h2>
-          <p className="mt-1 text-xs text-mist">
-            Requests go to the Aurora admin and activate only after the payment is verified.
-          </p>
-
-          <form onSubmit={raisePlan} className="mt-4 space-y-3">
-            <SelectField
-              id="plan"
-              label="Requested plan"
-              value={plan.requestedPlan}
-              onChange={(event) =>
-                setPlan({
-                  ...plan,
-                  requestedPlan: event.target.value,
-                  amount: event.target.value === 'enterprise' ? 14900 : event.target.value === 'growth' ? 4900 : 0,
-                })
-              }
-              options={PLAN_OPTIONS}
-            />
-            <SelectField
-              id="theme"
-              label="Theme"
-              value={plan.requestedTheme}
-              onChange={(event) => setPlan({ ...plan, requestedTheme: event.target.value })}
-              options={[
-                { value: 'classic', label: 'Classic' },
-                { value: 'emerald', label: 'Emerald' },
-                { value: 'sunrise', label: 'Sunrise' },
-                { value: 'midnight', label: 'Midnight' },
-              ]}
-            />
-            <SelectField
-              id="method"
-              label="How you paid"
-              value={plan.paymentMethod}
-              onChange={(event) => setPlan({ ...plan, paymentMethod: event.target.value })}
-              options={[
-                { value: 'bank_transfer', label: 'Bank transfer' },
-                { value: 'online', label: 'Online payment' },
-                { value: 'cheque', label: 'Cheque' },
-                { value: 'cash', label: 'Cash at counter' },
-              ]}
-            />
-            <input
-              value={plan.paymentReference}
-              onChange={(event) => setPlan({ ...plan, paymentReference: event.target.value })}
-              placeholder="Payment reference / transaction id"
-              aria-label="Payment reference"
-              className={FIELD_CLASS}
-            />
-            <input
-              value={plan.amount}
-              onChange={(event) => setPlan({ ...plan, amount: Number(event.target.value) || 0 })}
-              inputMode="numeric"
-              aria-label="Amount"
-              className={FIELD_CLASS}
-            />
-            <button type="submit" disabled={busy === 'plan'} className={`${SUBMIT_CLASS} w-full`}>
-              {busy === 'plan' ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
-              Send request to Aurora admin
-            </button>
-          </form>
-
-          <ul className="mt-5 divide-y divide-line">
-            {planRequests.map((request) => (
-              <li key={request.id ?? request._id} className="py-3">
-                <div className="flex flex-wrap items-center justify-between gap-3">
-                  <p className="text-sm font-semibold text-ink">
-                    {request.requestedPlan}
-                    <span className="ml-2 font-normal text-mist">
-                      {request.amount} {request.currency}
-                    </span>
-                  </p>
-                  <StatusChip status={request.status} />
-                </div>
-                <p className="mt-1 text-xs text-mist">
-                  payment {request.payment?.verified ? 'verified' : 'awaiting verification'}
-                  {request.payment?.reference ? ` · ref ${request.payment.reference}` : ''}
-                  {request.decisionNote ? ` · ${request.decisionNote}` : ''}
-                </p>
-              </li>
-            ))}
-            {!planRequests.length ? (
-              <li className="py-6 text-center text-sm text-mist">No plan requests yet.</li>
-            ) : null}
-          </ul>
-        </section>
       </div>
     </>
   )

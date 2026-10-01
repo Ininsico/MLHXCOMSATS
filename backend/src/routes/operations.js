@@ -13,6 +13,7 @@ const Hospital = require('../models/hospital')
 const Intake = require('../models/intake')
 const Invoice = require('../models/invoice')
 const LabOrder = require('../models/lab-order')
+const OutboxMessage = require('../models/outbox-message')
 const Review = require('../models/review')
 const HttpError = require('../lib/http-error')
 const audit = require('../lib/audit')
@@ -400,6 +401,59 @@ router.patch('/intake/:intakeId', async (req, res) => {
   if (!entry) throw new HttpError(404, 'NOT_FOUND', 'Intake entry not found.')
 
   res.json({ data: entry })
+})
+
+// ---------------------------------------------------------------- teleconsult
+
+/** The hospital sets how a visit happens and, for video, the room and join window. */
+router.patch('/appointments/:appointmentId/consult', async (req, res) => {
+  const hospital = await scopeHospital(req, req.body?.hospitalId)
+  const appointment = await Appointment.findOne({
+    _id: mongoose.isValidObjectId(req.params.appointmentId) ? req.params.appointmentId : null,
+    hospital: hospital._id,
+  })
+
+  if (!appointment) throw new HttpError(404, 'NOT_FOUND', 'Appointment not found.')
+
+  const mode = ['in_person', 'video', 'phone'].includes(req.body?.mode) ? req.body.mode : appointment.consult?.mode ?? 'in_person'
+  const roomUrl = typeof req.body?.roomUrl === 'string' ? req.body.roomUrl.trim().slice(0, 400) : appointment.consult?.roomUrl ?? ''
+  const notes = typeof req.body?.notes === 'string' ? req.body.notes.trim().slice(0, 300) : appointment.consult?.notes ?? ''
+
+  let joinFrom = appointment.consult?.joinFrom ?? null
+  let joinTo = appointment.consult?.joinTo ?? null
+
+  if (mode !== 'in_person') {
+    const [hours, minutes] = (appointment.time || '09:00').split(':').map(Number)
+    const slot = new Date(`${appointment.date}T00:00:00`)
+    slot.setHours(hours, minutes, 0, 0)
+    joinFrom = new Date(slot.getTime() - 15 * 60000)
+    joinTo = new Date(slot.getTime() + 45 * 60000)
+  }
+
+  appointment.consult = { ...(appointment.consult ?? {}), mode, roomUrl, joinFrom, joinTo, notes }
+  appointment.markModified('consult')
+  await appointment.save()
+
+  if (mode !== 'in_person' && appointment.patientPhone) {
+    await OutboxMessage.create({
+      phone: appointment.patientPhone,
+      text: `Aurora: your visit with ${appointment.doctorName || 'the doctor'} on ${appointment.date} at ${
+        appointment.time
+      } will be by ${mode === 'video' ? 'video' : 'phone'}.${roomUrl ? ` Join here: ${roomUrl}` : ''}`,
+      kind: 'notice',
+      patientName: appointment.patientName,
+    })
+  }
+
+  await audit.record(req, {
+    action: 'appointment.consult_set',
+    subjectType: 'Appointment',
+    subjectId: appointment._id,
+    hospital: hospital._id,
+    summary: `${appointment.patientName}: ${mode}${roomUrl ? ' with a room link' : ''}`,
+  })
+
+  res.json({ data: appointment })
 })
 
 // ---------------------------------------------------------------- analytics

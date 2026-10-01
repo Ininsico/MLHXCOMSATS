@@ -590,6 +590,38 @@ router.post('/outbox', async (req, res) => {
   res.json({ data: message })
 })
 
+/** Read one queued message's delivery status — how the health of the outbox is seen. */
+router.get('/outbox/:messageId', async (req, res) => {
+  const internal = req.headers['x-nurse-token'] === process.env.NURSE_WEBHOOK_TOKEN
+
+  if (!internal) {
+    await new Promise((resolve) => requireAuth(req, res, resolve))
+    if (!req.user) return
+    await new Promise((resolve) => requireRole('admin', 'hospital')(req, res, resolve))
+    if (!req.user) return
+  }
+
+  const message = await OutboxMessage.findOne({
+    _id: mongoose.isValidObjectId(req.params.messageId) ? req.params.messageId : null,
+  })
+
+  if (!message) {
+    throw new HttpError(404, 'NOT_FOUND', 'Outbox message not found.')
+  }
+
+  res.json({
+    data: {
+      id: message.id,
+      phone: message.phone,
+      kind: message.kind,
+      status: message.status,
+      attempts: message.attempts,
+      sentAt: message.sentAt,
+      error: message.error,
+    },
+  })
+})
+
 /** Bridge pulls what to send next. Delivery is only confirmed by /sent. */
 router.post('/outbox/pull', async (req, res) => {
   requireBridgeToken(req)

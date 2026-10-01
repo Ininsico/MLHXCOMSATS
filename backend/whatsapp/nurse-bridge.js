@@ -48,7 +48,17 @@ client.on('disconnected', (reason) => {
 
 client.on('message', async (message) => {
   if (!ready) return
-  if (message.from === 'status@broadcast' || message.from.endsWith('@g.us')) return
+
+  // Groups, status broadcasts and newsletter channels are not patients. Answering a
+  // channel puts clinical text into a broadcast, so they are skipped explicitly.
+  if (
+    message.from === 'status@broadcast' ||
+    message.from.endsWith('@g.us') ||
+    message.from.endsWith('@newsletter') ||
+    message.from.endsWith('@broadcast')
+  ) {
+    return
+  }
 
   const phone = message.from.replace(/@c\.us$/, '')
   const text = (message.body || '').trim()
@@ -76,7 +86,9 @@ client.on('message', async (message) => {
       const chat = await message.getChat()
       await chat.sendStateTyping()
     } catch (typingError) {
-      console.warn('typing indicator skipped:', typingError.message)
+      // whatsapp-web.js sometimes throws a bare string here; it is cosmetic either way.
+      const reason = typingError?.message || String(typingError) || 'unknown'
+      console.warn('typing indicator skipped:', reason.length > 1 ? reason : '(library threw a bare value)')
     }
 
     await new Promise((resolve) => setTimeout(resolve, payload?.data?.typingDelayMs ?? 1500))

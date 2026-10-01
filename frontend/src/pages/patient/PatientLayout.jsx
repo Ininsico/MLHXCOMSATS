@@ -4,12 +4,15 @@ import {
   Brain,
   Building2,
   CalendarCheck,
+  ClipboardList,
   FlaskConical,
   HeartHandshake,
   HeartPulse,
   LayoutDashboard,
   Settings,
   Siren,
+  Syringe,
+  Wallet,
 } from 'lucide-react'
 import DashboardShell from '../../components/shell/DashboardShell'
 import { useAuth } from '../../context/auth-context'
@@ -22,6 +25,9 @@ const NAV = [
   { to: '/dashboard/vitals', label: 'Vitals', icon: Activity },
   { to: '/dashboard/emergency', label: 'Emergency SOS', icon: Siren },
   { to: '/dashboard/medical-card', label: 'Medical card', icon: HeartPulse },
+  { to: '/dashboard/care-plans', label: 'Care plans', icon: ClipboardList },
+  { to: '/dashboard/vaccinations', label: 'Vaccinations', icon: Syringe },
+  { to: '/dashboard/pay', label: 'Pay with Binance', icon: Wallet },
   {
     label: 'Aurora AI',
     icon: Brain,

@@ -20,6 +20,15 @@ const appointmentSchema = new Schema(
     },
     source: { type: String, enum: ['patient', 'ai', 'hospital'], default: 'patient' },
     aiNote: { type: String, trim: true, maxlength: 300, default: '' },
+    consult: {
+      mode: { type: String, enum: ['in_person', 'video', 'phone'], default: 'in_person' },
+      roomUrl: { type: String, trim: true, maxlength: 400, default: '' },
+      joinFrom: { type: Date, default: null },
+      joinTo: { type: Date, default: null },
+      startedAt: { type: Date, default: null },
+      endedAt: { type: Date, default: null },
+      notes: { type: String, trim: true, maxlength: 300, default: '' },
+    },
   },
   { timestamps: true },
 )

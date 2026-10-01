@@ -1,5 +1,5 @@
 import { useCallback, useEffect, useState } from 'react'
-import { Activity, Ambulance, BedDouble, Loader2, Plus, Receipt, Siren } from 'lucide-react'
+import { Activity, Ambulance, BedDouble, Loader2, Plus, Receipt, Send, Siren } from 'lucide-react'
 import SelectField from '../../components/SelectField'
 import StatusChip from '../../components/StatusChip'
 import LineChart from '../../components/charts/LineChart'
@@ -32,6 +32,9 @@ export default function HospitalOperationsPage() {
   const [admissions, setAdmissions] = useState([])
   const [invoices, setInvoices] = useState([])
   const [intake, setIntake] = useState([])
+  const [waitlist, setWaitlist] = useState([])
+  const [previsitForms, setPrevisitForms] = useState([])
+  const [offerForm, setOfferForm] = useState({ date: '', time: '', doctorName: '' })
   const [bedForm, setBedForm] = useState({ ward: '', label: '', kind: 'general' })
   const [admitForm, setAdmitForm] = useState({ patientName: '', bedId: '', reason: '' })
   const [invoiceForm, setInvoiceForm] = useState({ patientName: '', label: '', amount: '' })
@@ -54,6 +57,10 @@ export default function HospitalOperationsPage() {
       setAdmissions(admissionData ?? [])
       setInvoices(invoiceData ?? [])
       setIntake(intakeData ?? [])
+
+      const [waitlistData, previsitData] = await Promise.all([api.waitlist.list(), api.waitlist.previsitForms()])
+      setWaitlist(waitlistData ?? [])
+      setPrevisitForms(previsitData ?? [])
     } catch (err) {
       setError(err.message || 'Could not load operations data.')
     }
@@ -481,6 +488,118 @@ export default function HospitalOperationsPage() {
           ))}
           {!invoices.length ? (
             <li className="py-6 text-center text-sm text-mist">No invoices yet.</li>
+          ) : null}
+        </ul>
+      </section>
+      <section className="mt-6 rounded-2xl border border-line bg-white p-6 shadow-soft">
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <h2 className="text-lg font-semibold text-ink">Waitlist</h2>
+          <span className="text-xs font-semibold uppercase tracking-wide text-mist">
+            {waitlist.filter((entry) => entry.status === 'waiting').length} waiting ·{' '}
+            {waitlist.filter((entry) => entry.status === 'offered').length} offered
+          </span>
+        </div>
+
+        <p className="mt-1 text-xs text-mist">
+          When a slot frees, offer it to the next person in line — they get a WhatsApp message and
+          the offer lapses on its own if they do not answer.
+        </p>
+
+        <form
+          onSubmit={(event) => {
+            event.preventDefault()
+            run('offer', async () => {
+              await api.waitlist.offer(offerForm)
+              setOfferForm({ date: '', time: '', doctorName: '' })
+              setNotice('Slot offered — the patient has been messaged.')
+            })
+          }}
+          className="mt-4 flex flex-wrap items-end gap-2"
+        >
+          <div className="w-40">
+            <label htmlFor="offer-date" className="text-xs font-semibold uppercase tracking-wide text-mist">
+              Freed date
+            </label>
+            <input
+              id="offer-date"
+              type="date"
+              value={offerForm.date}
+              onChange={(event) => setOfferForm({ ...offerForm, date: event.target.value })}
+              className={`${FIELD_CLASS} mt-1.5`}
+            />
+          </div>
+          <SelectField
+            id="offer-time"
+            label="Time"
+            size="sm"
+            className="w-32"
+            value={offerForm.time}
+            onChange={(event) => setOfferForm({ ...offerForm, time: event.target.value })}
+            options={[
+              { value: '', label: '—' },
+              ...[
+                '09:00', '09:30', '10:00', '10:30', '11:00', '11:30', '12:00', '12:30',
+                '13:00', '13:30', '14:00', '14:30', '15:00', '15:30', '16:00', '16:30', '17:00',
+              ].map((time) => ({ value: time, label: time })),
+            ]}
+          />
+          <input
+            value={offerForm.doctorName}
+            onChange={(event) => setOfferForm({ ...offerForm, doctorName: event.target.value })}
+            placeholder="Doctor (optional)"
+            aria-label="Doctor"
+            className={`${FIELD_CLASS} w-48`}
+          />
+          <button type="submit" disabled={busy === 'offer'} className={SUBMIT_CLASS}>
+            {busy === 'offer' ? <Loader2 size={14} className="animate-spin" /> : <Send size={14} />}
+            Offer to next in line
+          </button>
+        </form>
+
+        <ul className="mt-4 divide-y divide-line">
+          {waitlist.map((entry) => (
+            <li key={entry.id ?? entry._id} className="flex flex-wrap items-center justify-between gap-3 py-3">
+              <div>
+                <p className="text-sm font-semibold text-ink">
+                  {entry.patientName}
+                  {entry.specialty ? ` · ${entry.specialty}` : ''}
+                  {entry.patientPhone ? ` · ${entry.patientPhone}` : ''}
+                </p>
+                <p className="mt-0.5 text-xs text-mist">
+                  joined {new Date(entry.createdAt).toLocaleDateString()}
+                  {entry.from || entry.to ? ` · wants ${entry.from || 'any'} → ${entry.to || 'any'}` : ''}
+                  {entry.offer?.date ? ` · offered ${entry.offer.date} ${entry.offer.time}${entry.offer.expiresAt ? ` (until ${new Date(entry.offer.expiresAt).toLocaleString()})` : ''}` : ''}
+                </p>
+              </div>
+              <StatusChip status={entry.status} />
+            </li>
+          ))}
+          {!waitlist.length ? (
+            <li className="py-6 text-center text-sm text-mist">Nobody waiting — the list fills as patients join.</li>
+          ) : null}
+        </ul>
+      </section>
+
+      <section className="mt-6 rounded-2xl border border-line bg-white p-6 shadow-soft">
+        <h2 className="text-lg font-semibold text-ink">Pre-visit answers</h2>
+        <p className="mt-1 text-xs text-mist">
+          What patients wrote before their visit — useful at the desk and picked up by the doctor's
+          AI note draft.
+        </p>
+
+        <ul className="mt-4 divide-y divide-line">
+          {previsitForms.slice(0, 8).map((form) => (
+            <li key={form.id ?? form._id} className="py-3">
+              <p className="text-sm font-semibold text-ink">{form.patientName}</p>
+              <p className="mt-0.5 text-xs text-mist">
+                {new Date(form.submittedAt).toLocaleString()}
+                {form.painScale !== null && form.painScale !== undefined ? ` · pain ${form.painScale}/10` : ''}
+              </p>
+              {form.symptoms ? <p className="mt-1 text-sm text-body">{form.symptoms}</p> : null}
+            </li>
+          ))}
+          {!previsitForms.length ? (
+            <li className="py-6 text-center text-sm text-mist">No answers submitted yet.</li>
           ) : null}
         </ul>
       </section>

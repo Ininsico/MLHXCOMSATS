@@ -31,6 +31,7 @@ export default function DoctorWorkspacePage() {
   const [referrals, setReferrals] = useState([])
   const [referral, setReferral] = useState({ toSpecialty: 'Cardiology', reason: '', urgency: 'routine', patientName: '' })
   const [busy, setBusy] = useState('')
+  const [previsit, setPrevisit] = useState(null)
   const [listening, setListening] = useState('')
   const [error, setError] = useState('')
   const [notice, setNotice] = useState('')
@@ -90,6 +91,13 @@ export default function DoctorWorkspacePage() {
       if (existing) setNote({ ...existing, draft: Boolean(existing.draft) })
     } catch {
       /* no note yet */
+    }
+
+    try {
+      const answers = await api.doctorCare.previsit(id)
+      setPrevisit(answers ?? null)
+    } catch {
+      setPrevisit(null)
     }
   }
 
@@ -288,6 +296,36 @@ export default function DoctorWorkspacePage() {
           </p>
         )}
       </section>
+
+      {previsit ? (
+        <section className="mt-6 rounded-2xl border border-brand-200 bg-brand-50 p-6">
+          <div className="flex flex-wrap items-center justify-between gap-3">
+            <h2 className="text-lg font-semibold text-ink">What the patient told us before the visit</h2>
+            <span className="text-xs font-semibold uppercase tracking-wide text-brand-700">
+              submitted {new Date(previsit.submittedAt).toLocaleString()}
+            </span>
+          </div>
+
+          <dl className="mt-4 grid gap-3 sm:grid-cols-2">
+            {[
+              ['Symptoms', previsit.symptoms],
+              ['How long', previsit.duration],
+              ['Pain', previsit.painScale !== null && previsit.painScale !== undefined ? `${previsit.painScale}/10` : ''],
+              ['Medications listed', previsit.currentMedications],
+              ['Allergies listed', previsit.allergies],
+              ['Wants to ask', previsit.questions],
+              ['Anything else', previsit.anythingElse],
+            ]
+              .filter(([, value]) => Boolean(value))
+              .map(([label, value]) => (
+                <div key={label} className="rounded-xl bg-white px-4 py-3">
+                  <dt className="text-xs font-semibold uppercase tracking-wide text-mist">{label}</dt>
+                  <dd className="mt-1 text-sm leading-relaxed text-body">{value}</dd>
+                </div>
+              ))}
+          </dl>
+        </section>
+      ) : null}
 
       <div className="mt-6 grid gap-6 lg:grid-cols-2">
         <section className="rounded-2xl border border-line bg-white p-6 shadow-soft">

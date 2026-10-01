@@ -36,6 +36,10 @@ import AuroraAiPage from './pages/patient/AuroraAiPage'
 import PatientVitalsPage from './pages/patient/PatientVitalsPage'
 import PatientEmergencyPage from './pages/patient/PatientEmergencyPage'
 import PatientMedicalCardPage from './pages/patient/PatientMedicalCardPage'
+import PatientCarePlanPage from './pages/patient/PatientCarePlanPage'
+import PatientVaccinationsPage from './pages/patient/PatientVaccinationsPage'
+import PatientPaymentPage from './pages/patient/PatientPaymentPage'
+import VerifyVaccinationPage from './pages/public/VerifyVaccinationPage'
 import DoctorLayout from './pages/doctor/DoctorLayout'
 import DoctorOverviewPage from './pages/doctor/DoctorOverviewPage'
 import DoctorAppointmentsPage from './pages/doctor/DoctorAppointmentsPage'
@@ -134,6 +138,9 @@ function App() {
               <Route path="/dashboard/vitals" element={<PatientVitalsPage />} />
               <Route path="/dashboard/emergency" element={<PatientEmergencyPage />} />
               <Route path="/dashboard/medical-card" element={<PatientMedicalCardPage />} />
+              <Route path="/dashboard/care-plans" element={<PatientCarePlanPage />} />
+              <Route path="/dashboard/vaccinations" element={<PatientVaccinationsPage />} />
+              <Route path="/dashboard/pay" element={<PatientPaymentPage />} />
               <Route path="/dashboard/lab/:orderId" element={<PatientLabReportPage />} />
               <Route path="/explore" element={<ExplorePage />} />
               <Route path="/explore/:hospitalId" element={<HospitalDetailPage />} />
@@ -189,6 +196,7 @@ function App() {
               <Route path="accounts" element={<AdminAccountsPage />} />
             </Route>
 
+            <Route path="/verify-vaccination/:code" element={<VerifyVaccinationPage />} />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </AuthProvider>
