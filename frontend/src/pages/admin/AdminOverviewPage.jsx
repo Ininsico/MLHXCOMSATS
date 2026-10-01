@@ -144,7 +144,7 @@ export default function AdminOverviewPage() {
       <section className="mt-10">
         <h2 className="text-lg font-semibold text-ink">Recent accounts</h2>
         <div className="mt-4 overflow-x-auto rounded-2xl border border-line shadow-soft">
-          <table className="w-full text-left text-sm">
+          <table className="w-full min-w-[640px] text-left text-sm">
             <thead className="border-b border-line bg-surface">
               <tr>
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
@@ -156,7 +156,7 @@ export default function AdminOverviewPage() {
                 <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
                   Role
                 </th>
-                <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
+                <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist md:table-cell">
                   Joined
                 </th>
               </tr>
@@ -167,7 +167,7 @@ export default function AdminOverviewPage() {
                   <td className="px-4 py-3 font-medium text-ink">{account.name}</td>
                   <td className="px-4 py-3 text-body">{account.email}</td>
                   <td className="px-4 py-3 text-body">{account.role}</td>
-                  <td className="px-4 py-3 text-body">
+                  <td className="hidden px-4 py-3 text-body md:table-cell">
                     {new Date(account.createdAt).toLocaleDateString('en-US', {
                       month: 'short',
                       day: 'numeric',

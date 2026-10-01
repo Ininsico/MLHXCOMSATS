@@ -44,6 +44,14 @@
     scroll-behavior: smooth;
   }
 
+  /* Safety net: no page may scroll horizontally at 360px+. Uses `clip`
+     rather than `hidden` so it does NOT create a scroll container and
+     therefore leaves `position: sticky` (the dashboard topbar) intact. */
+  html,
+  body {
+    overflow-x: clip;
+  }
+
   body {
     background-color: #fff;
     color: var(--color-body);

@@ -131,7 +131,13 @@ Font: **Poppins** (400/500/600/700/800), loaded in `main.css`; fallback
   Therapy room (the room's chat and memory columns stay a balanced grid, not a centred strip).
 - Section rhythm: `py-24` desktop, `py-16` mobile.
 - Breakpoints: `sm` 640, `md` 768, `lg` 1024, `xl` 1280.
-- Minimum supported width **360px** — no horizontal scroll at any width.
+- Minimum supported width **360px** — no horizontal scroll at any width. `html`/`body` carry
+  `overflow-x: clip` (not `hidden`, so the shell's sticky topbar still sticks) as a safety
+  net; sections with decorative shapes keep their own `overflow-hidden`.
+- Wide data tables live in an `overflow-x-auto` wrapper with a `min-w-[...]` table so they
+  scroll instead of squeezing; low-priority columns are `hidden md:table-cell`.
+- Controls inside a wrapping toolbar/form row are `w-full sm:w-<size>` so they stack
+  full-width on phones and keep their fixed size from `sm` up.
 - Landing hero is `min-h-[110vh]` so the scroll choreography has room.
 
 ---
@@ -227,6 +233,9 @@ const EASE = [0.23, 1, 0.32, 1];
   Right: one route pill (`Explore` for guests, patients, and admins; `Hospital portal` for
   hospital accounts), plus one text link when signed out (`Sign in`) and one small primary
   (`Get started` / `Open Aurora`). Nothing else.
+- Below `lg` the centre zone collapses into a hamburger (`Menu`/`X`, `lg:hidden`) that toggles a
+  panel under the bar holding the marketing links, the route link and `Sign in`; it closes on
+  selection and on Escape. The primary CTA stays in the bar.
 
 ### About page
 - Public route `/about`, guest-only like the other marketing routes. Composed with the landing
@@ -279,8 +288,17 @@ const EASE = [0.23, 1, 0.32, 1];
 - Split layout via `AuthSplitLayout`: the form on one side (signup right, signin left)
   and a deep forest (`bg-brand-950`) testimonial panel with quoted reviews and stars on
   the other; the panel hides below `lg`.
-- Sign-in has two modes behind a segmented control (`bg-surface` pill, active = white +
-  `shadow-soft`): password, and a one-time code emailed to the account. Password reset is a
+- `Back to home` sits at the top-left of the form column — not above the heading — as a
+  `hover:bg-surface hover:text-ink` pill; the form block stays vertically centred, so no
+  large gap sits above the title. Column rhythm is tight: heading `mt-2`, sub `mt-1.5`,
+  content `mt-6`, footer `mt-5`, fields `space-y-4`.
+- Deep-panel reviews: the featured quote is `text-2xl text-white` with `Stars` and a
+  `text-white/60` attribution; the other quotes are cards — `rounded-xl border-white/10
+  bg-white/5` with `text-white/75` copy over `text-white/50` attribution.
+- Sign-in has two modes behind a full-width segmented control (`flex w-full rounded-full
+  border-line bg-surface p-1`, `flex-1` tabs; active = white + `shadow-soft`, idle =
+  `text-mist hover:text-ink`): password, and a one-time code emailed to the account.
+  Password reset is a
   two-step code flow on `/forgot-password`. The code field is a 6-digit
   `inputMode="numeric"` text field — never a password field. The admin console uses the same
   two-mode sign-in inside its dark frame.
@@ -315,29 +333,35 @@ const EASE = [0.23, 1, 0.32, 1];
   `px-4`, nav `px-2`, rows `pl-2`, sub-items `pl-8`) — active `bg-brand-50 text-brand-800`
   with a 3px `bg-brand-600` indicator bar, idle `text-body` hover `bg-surface`. The
   pending-approval count rides the Applications item as a `bg-brand-700` pill (a dot when
-  collapsed). Brand mark + `Admin` chip at the top; at the bottom a profile block — avatar
-  initial, account email (`truncate`), "Admin account" line — above the sign-out row.
-- The rail centres exactly: nav rows and sign out `lg:pl-[23px]`, the profile avatar run
-  `lg:pl-[14px]`, and the "A" monogram `hidden lg:grid lg:left-[22px]` — icons, avatar and
-  monogram all land on the 80px rail's centre line.
+  collapsed). Brand mark + `Admin` chip at the top; the sidebar carries navigation only —
+  the account lives in the topbar menu.
+- The rail centres exactly: nav rows `lg:pl-[23px]` and the "A" monogram
+  `hidden lg:grid lg:left-[22px]` — icons and monogram land on the 80px rail's centre line.
 - Below `lg` the sidebar is an off-canvas drawer: `translate-x` transition, backdrop
-  `bg-brand-950/20 backdrop-blur-sm`, closes on backdrop click, Escape, or navigation. The
-  drawer carries the profile block, which is where the account email lives below `sm`.
+  `bg-brand-950/20 backdrop-blur-sm`, closes on backdrop click, Escape, or navigation; it
+  carries navigation only — the account menu stays in the topbar.
 - Topbar: sticky, `h-16`, `bg-white/80 backdrop-blur-xl border-b border-line`, with the
   drawer button (mobile), the collapse toggle (desktop), then the current section's icon tile
   (`h-8 w-8 bg-brand-50 text-brand-700`) and name on the left (title truncates), and any
-  `topbarExtra` chip plus the account email on the right — email truncates
-  (`max-w-[200px] lg:max-w-xs`) and shows from `sm` up.
+  `topbarExtra` chip plus the account menu on the right.
+- Account menu (`UserMenu` in the shell): the account email in the topbar is the trigger
+  (with a `ChevronDown` that rotates when open, `aria-haspopup="menu"`, `aria-expanded`);
+  it opens a `right-0` panel below the trigger — white, `border-line`, `rounded-xl`,
+  `shadow-lift`, `p-1.5`, `w-60` — holding a single **Sign out** row (`LogOut` icon, runs
+  the shell's `onSignout`). The row is `rounded-lg px-3 py-2.5 text-sm font-semibold`
+  `text-body` hover `bg-surface text-ink` with an inset focus ring. It closes on outside
+  click, Escape, and row selection, and fades/drops in over 180ms on `EASE` (fade only
+  under reduced motion). The email truncates on narrow screens.
 - Sections are routes — `/admin` overview, `/admin/applications`, `/admin/verification`,
   `/admin/hospitals`, `/admin/subscriptions`, `/admin/accounts` — sharing one data load
   through the outlet context. Cards, tables and chips reuse the standard patterns above.
 - Collapse animation (the §6 exception): the aside's width eases `16rem ↔ 5rem` over 300ms on
   the shared curve while the content wrapper's `padding-left` follows; the inner column keeps
-  a fixed `w-64` and the aside clips it, so no text reflows. Labels, the account email, the
+  a fixed `w-64` and the aside clips it, so no text reflows. Labels, the
   count pill and the logo mark cross-fade with the "A" monogram over 200ms, and item padding
-  eases to the rail's centred value — `lg:pl-[31px]` on the base chrome, `[23px]`/`[14px]`/
-  `[22px]` on the admin chrome above — so icons glide to the centre of the rail. The pending
-  dot rides the icon's corner while collapsed.
+  eases to the rail's centred value — `lg:pl-[31px]` on the base chrome, `[23px]`/`[22px]` on
+  the admin chrome above — so icons glide to the centre of the rail. The pending dot rides the
+  icon's corner while collapsed.
 - Charts are hand-rolled SVG (`components/admin/charts/`) — no chart library:
   `AreaChart` (smoothed 14-day signups with a crosshair, hover tooltip and legend totals),
   `DonutChart` (status and verification breakdowns with a centre total and legend), and
@@ -356,8 +380,9 @@ const EASE = [0.23, 1, 0.32, 1];
   own `variant="admin"` chrome on top; see the admin console rules).
 - `/explore` and `/explore/:id` live inside this shell (no landing navbar). The shell's `main`
   supplies padding, so page content only adds its own `max-w-*` container.
-- Settings: profile (name), email plus confirmation state, password change, and a sign-out
-  panel; every form shows saving/saved/error states.
+- Settings: profile (name), email plus confirmation state, and password change; every form
+  shows saving/saved/error states. Signing out lives in the topbar account menu, so there is
+  no sign-out card here.
 
 ### Emergency SOS page (patients)
 - `/dashboard/emergency`, inside the patient shell on one full-width `space-y-6` column — the
@@ -481,6 +506,10 @@ const EASE = [0.23, 1, 0.32, 1];
 - Visible `<label>` above every input (14px, 600, `text-ink`) — never placeholder-as-label.
 - Input: `h-11 rounded-lg border-line` white; focus `ring-2 ring-brand-600`; error:
   `border-danger` + 14px `text-danger` message below.
+- Password inputs go through `PasswordField` — the input shell plus a right-aligned
+  `Eye`/`EyeOff` toggle in a `w-11` hit area that flips `type` between `password` and
+  `text` (`aria-label` "Show password"/"Hide password", `aria-pressed`), the input
+  reserving `pr-11` for it. Never ship a bare password input.
 - Selects go through `SelectField` — same shell as inputs with `appearance-none`, a
   `ChevronDown` affordance and the same focus ring; never ship a bare native select. Sizes:
   `md` (h-11, forms) and `sm` (h-10, toolbars and list rows). List-row selects carry an
@@ -494,6 +523,13 @@ const EASE = [0.23, 1, 0.32, 1];
 ### Cards
 - White + 1px `border-line` + `rounded-2xl` + `shadow-soft` + `p-6`. Tinted variant:
   `bg-brand-50/60`. At most one level of nesting.
+- **Stat card:** label (`text-xs font-semibold uppercase tracking-wide text-mist`) with a
+  `h-9 w-9 rounded-xl bg-brand-50 text-brand-700` icon badge on the right, value below as
+  `text-3xl font-extrabold tracking-tight tabular-nums text-ink`; the card lifts to
+  `shadow-lift` on hover (`duration-200`).
+- **Meta chips** (specialty, location, tags): `inline-flex items-center gap-1.5 rounded-full
+  border border-line bg-surface px-3 py-1 text-xs font-medium text-body`, with a `size={14}`
+  icon in `text-brand-600`.
 
 ### Scroll regions
 - A panel that scrolls keeps `overflow-y: auto` and drops the bar with `.scrollbar-none`

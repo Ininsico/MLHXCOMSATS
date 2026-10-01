@@ -207,7 +207,7 @@ export default function PatientAppointmentsPage() {
             return (
               <li key={id} className="rounded-2xl border border-line bg-white px-6 py-5 shadow-soft">
                 <div className="flex flex-wrap items-center gap-4">
-                  <div className="min-w-[180px]">
+                  <div className="w-full sm:min-w-[180px] sm:w-auto">
                     <p className="text-sm font-bold text-ink">
                       {formatSlotDate(item.date)} · {item.time}
                     </p>
@@ -399,7 +399,7 @@ export default function PatientAppointmentsPage() {
                     onSubmit={(event) => handleReschedule(event, id)}
                     className="mt-5 flex flex-wrap items-end gap-3 border-t border-line pt-5"
                   >
-                    <div className="w-44">
+                    <div className="w-full sm:w-44">
                       <label htmlFor={`date-${id}`} className="text-xs font-semibold uppercase tracking-wide text-mist">
                         New date
                       </label>
@@ -417,7 +417,7 @@ export default function PatientAppointmentsPage() {
                       id={`time-${id}`}
                       label="New time"
                       size="sm"
-                      className="w-36"
+                      className="w-full sm:w-36"
                       value={form.time}
                       onChange={(event) => setForm({ ...form, time: event.target.value })}
                       options={SLOT_TIMES.map((time) => ({ value: time, label: time }))}
@@ -443,13 +443,13 @@ export default function PatientAppointmentsPage() {
                       id={`rating-${id}`}
                       label="How was it?"
                       size="sm"
-                      className="w-52"
+                      className="w-full sm:w-52"
                       value={form.rating}
                       onChange={(event) => setForm({ ...form, rating: event.target.value })}
                       options={RATINGS}
                     />
 
-                    <div className="min-w-[240px] flex-1">
+                    <div className="w-full sm:min-w-[240px] sm:flex-1">
                       <label htmlFor={`comment-${id}`} className="text-xs font-semibold uppercase tracking-wide text-mist">
                         Comment (optional)
                       </label>

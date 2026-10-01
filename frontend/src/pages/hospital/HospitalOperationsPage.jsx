@@ -175,7 +175,9 @@ export default function HospitalOperationsPage() {
         <ul className="mt-4 space-y-2">
           {(analytics?.topDepartments ?? []).map((row) => (
             <li key={row.name} className="flex items-center gap-3">
-              <span className="w-40 shrink-0 text-xs font-semibold text-body">{row.name}</span>
+              <span className="w-24 shrink-0 text-xs font-semibold text-body sm:w-40">
+                {row.name}
+              </span>
               <span className="h-2.5 flex-1 overflow-hidden rounded-full bg-surface">
                 <span
                   className="block h-full rounded-full bg-brand-600"
@@ -216,19 +218,19 @@ export default function HospitalOperationsPage() {
               onChange={(event) => setBedForm({ ...bedForm, ward: event.target.value })}
               placeholder="Ward"
               aria-label="Ward"
-              className={`${FIELD_CLASS} w-32`}
+              className={`${FIELD_CLASS} w-full sm:w-32`}
             />
             <input
               value={bedForm.label}
               onChange={(event) => setBedForm({ ...bedForm, label: event.target.value })}
               placeholder="Bed"
               aria-label="Bed label"
-              className={`${FIELD_CLASS} w-28`}
+              className={`${FIELD_CLASS} w-full sm:w-28`}
             />
             <SelectField
               id="bed-kind"
               size="sm"
-              className="w-36"
+              className="w-full sm:w-36"
               value={bedForm.kind}
               onChange={(event) => setBedForm({ ...bedForm, kind: event.target.value })}
               options={['general', 'hdu', 'icu', 'isolation', 'maternity'].map((value) => ({ value, label: value }))}
@@ -273,13 +275,13 @@ export default function HospitalOperationsPage() {
               onChange={(event) => setAdmitForm({ ...admitForm, patientName: event.target.value })}
               placeholder="Patient name"
               aria-label="Patient name"
-              className={`${FIELD_CLASS} w-44`}
+              className={`${FIELD_CLASS} w-full sm:w-44`}
             />
             <SelectField
               id="admit-bed"
               label="Bed"
               size="sm"
-              className="w-40"
+              className="w-full sm:w-40"
               value={admitForm.bedId}
               onChange={(event) => setAdmitForm({ ...admitForm, bedId: event.target.value })}
               options={[
@@ -412,14 +414,14 @@ export default function HospitalOperationsPage() {
             onChange={(event) => setInvoiceForm({ ...invoiceForm, patientName: event.target.value })}
             placeholder="Patient"
             aria-label="Invoice patient"
-            className={`${FIELD_CLASS} w-44`}
+            className={`${FIELD_CLASS} w-full sm:w-44`}
           />
           <input
             value={invoiceForm.label}
             onChange={(event) => setInvoiceForm({ ...invoiceForm, label: event.target.value })}
             placeholder="Line item"
             aria-label="Line item"
-            className={`${FIELD_CLASS} w-52`}
+            className={`${FIELD_CLASS} w-full sm:w-52`}
           />
           <input
             value={invoiceForm.amount}
@@ -427,7 +429,7 @@ export default function HospitalOperationsPage() {
             placeholder="Amount"
             inputMode="numeric"
             aria-label="Amount"
-            className={`${FIELD_CLASS} w-28`}
+            className={`${FIELD_CLASS} w-full sm:w-28`}
           />
           <button type="submit" disabled={busy === 'invoice'} className={SUBMIT_CLASS}>
             {busy === 'invoice' ? <Loader2 size={14} className="animate-spin" /> : <Plus size={14} />}

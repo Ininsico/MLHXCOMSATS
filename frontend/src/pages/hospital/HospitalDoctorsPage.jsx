@@ -243,7 +243,7 @@ export default function HospitalDoctorsPage() {
                   id={`status-${id}`}
                   aria-label={`Status for ${member.name}`}
                   size="sm"
-                  className="w-36"
+                  className="w-full sm:w-36"
                   value={member.status}
                   onChange={(event) => handleStatus(id, event.target.value)}
                   disabled={busyId === id}

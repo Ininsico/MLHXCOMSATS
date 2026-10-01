@@ -18,7 +18,7 @@ export default function AdminAccountsPage() {
       </div>
 
       <div className="mt-8 overflow-x-auto rounded-2xl border border-line shadow-soft">
-        <table className="w-full text-left text-sm">
+        <table className="w-full min-w-[720px] text-left text-sm">
           <thead className="border-b border-line bg-surface">
             <tr>
               <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
@@ -33,10 +33,10 @@ export default function AdminAccountsPage() {
               <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
                 Status
               </th>
-              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
+              <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist md:table-cell">
                 Email confirmed
               </th>
-              <th className="px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist">
+              <th className="hidden px-4 py-3 text-xs font-semibold uppercase tracking-wide text-mist md:table-cell">
                 Joined
               </th>
             </tr>
@@ -50,10 +50,10 @@ export default function AdminAccountsPage() {
                 <td className="px-4 py-3">
                   <StatusChip status={account.status} />
                 </td>
-                <td className="px-4 py-3 text-body">
+                <td className="hidden px-4 py-3 text-body md:table-cell">
                   {account.emailVerifiedAt ? 'Yes' : 'Not yet'}
                 </td>
-                <td className="px-4 py-3 text-body">
+                <td className="hidden px-4 py-3 text-body md:table-cell">
                   {new Date(account.createdAt).toLocaleDateString('en-US', {
                     month: 'short',
                     day: 'numeric',

@@ -2,7 +2,7 @@ import { useState } from 'react'
 import { Eye, EyeOff } from 'lucide-react'
 
 const INPUT_CLASS =
-  'h-11 w-full rounded-lg border border-line bg-white px-3 text-sm text-ink outline-none transition-colors focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30 disabled:bg-surface disabled:text-mist'
+  'h-11 w-full rounded-lg border border-line bg-white px-3 text-sm text-ink outline-none transition-colors duration-200 placeholder:text-mist hover:border-brand-200 focus:border-brand-600 focus:ring-2 focus:ring-brand-600/30 disabled:bg-surface disabled:text-mist'
 
 export function TextField({ id, label, hint, ...inputProps }) {
   return (

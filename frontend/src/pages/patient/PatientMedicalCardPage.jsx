@@ -186,20 +186,20 @@ export default function PatientMedicalCardPage() {
                   onChange={(event) => setAllergy({ ...allergy, substance: event.target.value })}
                   placeholder="Substance (e.g. penicillin)"
                   aria-label="Allergy substance"
-                  className={`${FIELD_CLASS} w-48`}
+                  className={`${FIELD_CLASS} w-full sm:w-48`}
                 />
                 <input
                   value={allergy.reaction}
                   onChange={(event) => setAllergy({ ...allergy, reaction: event.target.value })}
                   placeholder="Reaction"
                   aria-label="Reaction"
-                  className={`${FIELD_CLASS} w-44`}
+                  className={`${FIELD_CLASS} w-full sm:w-44`}
                 />
                 <select
                   value={allergy.severity}
                   onChange={(event) => setAllergy({ ...allergy, severity: event.target.value })}
                   aria-label="Severity"
-                  className={`${FIELD_CLASS} w-32 appearance-none`}
+                  className={`${FIELD_CLASS} w-full appearance-none sm:w-32`}
                 >
                   {SEVERITIES.map((entry) => (
                     <option key={entry.value} value={entry.value}>
